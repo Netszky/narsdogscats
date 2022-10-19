@@ -4,6 +4,7 @@ import { Server } from 'http';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import apiRouter from '../routes/index';
+
 dotenv.config();
 
 const app: Express = express();
