@@ -7,7 +7,7 @@ import apiRouter from '../routes/index';
 dotenv.config();
 
 const app: Express = express();
-const port: String | undefined = process.env.PORT;
+const port: String = process.env.PORT!;
 
 app.use("*", cors());
 app.use(bodyParser.json({ limit: '50mb' }));

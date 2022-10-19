@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const uri: String | undefined = process.env.MONGO_URI
+const uri: String = process.env.MONGO_URI!
 export const dbConnect = () => {
     mongoose.connect(uri, {
         useNewUrlParser: true,
