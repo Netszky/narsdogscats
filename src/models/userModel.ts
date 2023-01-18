@@ -1,6 +1,6 @@
-import { Schema, model, Types, Document } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
-export interface IUser extends Document {
+export interface IUser {
     lastname: string,
     firstname: string,
     email: string,
