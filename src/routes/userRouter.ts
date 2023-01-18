@@ -1,8 +1,10 @@
 import * as express from 'express';
-import { Login } from '~/controllers/userController';
+import { Login, Register } from '~/controllers/userController';
 import { auth } from '~/middlewares/verifyToken';
 
 const router = express.Router()
-router.get("/login", auth, Login)
+router.post("/login", Login)
+router.post("/register", Register)
+
 
 export default router;
