@@ -9,7 +9,7 @@ export interface IAnimal {
     race: string,
     sexe: string,
     caractere: string,
-    entente: [string],
+    entente: string[],
     typeAdoption: string,
     taille: string,
     birthdate: Date,
