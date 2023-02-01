@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
 import { Server } from 'http';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -18,5 +18,3 @@ export const start: Server = app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 
 });
-
-// export default app;

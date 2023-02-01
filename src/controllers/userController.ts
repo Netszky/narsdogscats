@@ -1,17 +1,17 @@
-import { Express, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import bcrypt from 'bcrypt'
-import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
-import User, { IUser } from '~/models/userModel';
+import jwt, { Secret } from 'jsonwebtoken';
+import User from '~/models/userModel';
 
-export const Login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response) => {
 
     const SECRET_JWT: Secret = process.env.SECRET_JWT!
 
     const email = req.body.email.toLowerCase()
     await User.findOne({
-        email: req.body.email
+        email: email
     }).then((data) => {
-        if (bcrypt.compareSync(req.body.password, data!.password)) {
+        if (bcrypt.compareSync(req.body.password.toLowerCase(), data!.password)) {
             let userToken = jwt.sign({
                 id: data!._id!,
                 isAdmin: data!.isAdmin,
@@ -46,7 +46,7 @@ export const Login = async (req: Request, res: Response) => {
 };
 
 
-export const Register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response) => {
     const SECRET_JWT: Secret = process.env.SECRET_JWT!
     const hashPassword = bcrypt.hashSync(req.body.password, 10);
     const user = new User({
@@ -59,15 +59,16 @@ export const Register = async (req: Request, res: Response) => {
         .then((data) => {
             let userToken = jwt.sign({
                 id: data._id,
-                isAdmin: data.isAdmin!
+                isAdmin: data.isAdmin
             }, SECRET_JWT,
                 {
                     expiresIn: 80000
                 },
 
             )
-            res.send({
-                data, userToken
+            res.status(201).send({
+                message: "Utilisateur créé",
+                token: userToken
             })
             // let client = require('@sendgrid/mail');
             // client.setApiKey(process.env.SEND_GRID);
@@ -97,3 +98,66 @@ export const Register = async (req: Request, res: Response) => {
             })
         })
 }
+export const resetPassword = async (req: Request, res: Response) => {
+    // await User.find({ email: req.body.email })
+    //     .then((user) => {
+    //         const newToken = jwt.sign({
+    //             id: data!._id!,
+    //             isAdmin: data!.isAdmin,
+    //         },
+    //             SECRET_JWT,
+    //             {
+    //                 expiresIn: 80000
+    //             }
+    //         )
+    //         updateUserResetToken(user, token)
+    //             .then((newUser) => {
+    //                 const email = sendEmail(newUser, token, 4276684, "Réinitialisation");
+    //                 if (email.message === "Email Send") {
+    //                     res.status(200).send({
+    //                         status: 200,
+    //                         message: email.message,
+    //                     });
+    //                 } else {
+    //                     res.status(500).send({
+    //                         status: 500,
+    //                         message: email.message,
+    //                     });
+    //                 }
+    //             })
+    //             .catch((err) => {
+    //                 console.log(err);
+    //             });
+    //     })
+    //     .catch((err) => {
+    //         console.log(err);
+    //     });
+};
+export const updateResetPassword = async (req: Request, res: Response) => {
+    //// PASSER LE TOKEN DANS LE HEADER
+    const token = req.headers["authorization"]
+    if (req.body.password) {
+        const hasedPassword = bcrypt.hashSync(req.body.password, 10);
+        try {
+            await User.findOneAndUpdate({ resetToken: token },
+                { password: hasedPassword },
+                {
+                    new: true,
+                    omitUndefined: true,
+                })
+                .then(() => {
+                    res.status(200).send({
+                        status: "OK",
+                        message: "Password updated"
+                    });
+                })
+                .catch((err) => res.status(500).send({ err: err }));
+        } catch (error) {
+            res.status(401).send({
+                status: "NOK",
+                message: "Pas le bon token"
+            })
+        }
+    }
+
+};

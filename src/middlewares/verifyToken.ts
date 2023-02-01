@@ -1,5 +1,5 @@
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
-import { Express, Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 interface IUserToken {
     id: string,
