@@ -2,16 +2,19 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt'
 import jwt, { Secret } from 'jsonwebtoken';
 import User from '~/models/userModel';
+import { CustomRequest } from '~/middlewares/verifyToken';
 
 export const login = async (req: Request, res: Response) => {
 
     const SECRET_JWT: Secret = process.env.SECRET_JWT!
+    console.log(req.body);
 
     const email = req.body.email.toLowerCase()
     await User.findOne({
         email: email
     }).then((data) => {
         if (bcrypt.compareSync(req.body.password.toLowerCase(), data!.password)) {
+
             let userToken = jwt.sign({
                 id: data!._id!,
                 isAdmin: data!.isAdmin,
@@ -24,10 +27,6 @@ export const login = async (req: Request, res: Response) => {
             res.send({
                 token: userToken,
                 auth: true,
-                user: {
-                    firstname: data?.firstname,
-                    isAdmin: data?.isAdmin
-                }
             })
         } else {
             res.status(401).send({
@@ -160,4 +159,18 @@ export const updateResetPassword = async (req: Request, res: Response) => {
         }
     }
 
+};
+
+export const verifyRole = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isAdmin) {
+        res.status(200).send({
+            status: "OK",
+            isAdmin: true
+        })
+    } else {
+        res.status(401).send({
+            status: "OK",
+            isAdmin: false
+        })
+    }
 };
