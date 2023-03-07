@@ -1,4 +1,3 @@
-// AGE RACE SEXE CARACTERE ENTENTE TYPE DADOPTION TAILLE
 import { Schema, model, Types } from 'mongoose';
 
 export interface IAnimal {
@@ -14,6 +13,7 @@ export interface IAnimal {
     taille: string,
     birthdate: Date,
     idFamily: string
+    image: string[]
 }
 
 const AnimalSchema = new Schema<IAnimal>({
@@ -41,6 +41,10 @@ const AnimalSchema = new Schema<IAnimal>({
     },
     taille: { type: String, required: false, enum: ["petit", "grand"] },
     birthdate: { type: Date, required: false },
+    image: [{
+        type: String,
+        required: false
+    }]
 });
 
 const Animal = model<IAnimal>('Animal', AnimalSchema);
