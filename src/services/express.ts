@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import express, { Express } from 'express';
+import express, { Express, Request, Response } from 'express';
 import { Server } from 'http';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -10,7 +10,20 @@ dotenv.config();
 const app: Express = express();
 const port: string = process.env.PORT!;
 
-app.use("*", cors());
+const corsOptions = {
+  origin: ['https://les-animaux-du-27.fr', 'http://www.les-animaux-du-27'],
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204 
+}
+
+app.use(cors(corsOptions));
+
+// app.use((req: Request, res: Response, next) => {
+//   if (req.headers.origin !== 'https://les-animaux-du-27.fr') {
+//     return res.status(403).send('Not allowed');
+//   }
+//   next();
+// });
+
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use('/api/v1', apiRouter);
 
