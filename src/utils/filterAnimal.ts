@@ -28,7 +28,9 @@ export const filterAnimals = (query: any): object => {
         filter.sexe = { $regex: new RegExp(sexe, 'i') }
     }
     if (adoption) {
-        filter.adoption = { $regex: new RegExp(adoption, 'i') }
+        const adoptionValues = adoption.split(',');
+        filter.typeAdoption = { $in: adoptionValues.map((val: string) => new RegExp(val, 'i')) };
+        // filter.typeAdoption = { $regex: new RegExp(adoption, 'i') }
     }
 
     return filter
