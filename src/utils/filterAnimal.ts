@@ -5,7 +5,9 @@ export const filterAnimals = (query: any): object => {
         filter.age = age.toLowerCase() === "junior" ? { $lt: 2 } : age.toLowerCase() === "adulte" ? { $gt: 2 } : { $gt: 0 }
     }
     if (espece) {
-        filter.espece = { $regex: new RegExp(espece, 'i') }
+        // filter.espece = { $regex: new RegExp(espece, 'i') }
+        const especeValues = espece.split(',');
+        filter.espece = { $in: especeValues.map((val: string) => new RegExp(val, 'i')) };
     }
     if (race) {
         filter.race = { $regex: new RegExp(race, 'i') }
@@ -25,12 +27,12 @@ export const filterAnimals = (query: any): object => {
         };
     }
     if (sexe) {
-        filter.sexe = { $regex: new RegExp(sexe, 'i') }
+        const sexeValues = sexe.split(',');
+        filter.sexe = { $in: sexeValues.map((val: string) => new RegExp(val, 'i')) };
     }
     if (adoption) {
         const adoptionValues = adoption.split(',');
         filter.typeAdoption = { $in: adoptionValues.map((val: string) => new RegExp(val, 'i')) };
-        // filter.typeAdoption = { $regex: new RegExp(adoption, 'i') }
     }
 
     return filter

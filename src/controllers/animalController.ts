@@ -52,7 +52,10 @@ export const getAllAnimals = async (req: Request, res: Response) => {
         await Animal.find(query).then((data) => {
             res.status(200).send({
                 status: "OK",
-                animals: data
+                animals: data,
+                nbChien: data.filter(i => i.espece === "chien").length,
+                nbChat: data.filter(i => i.espece === "chat").length
+
             })
         })
     } else {
@@ -60,7 +63,9 @@ export const getAllAnimals = async (req: Request, res: Response) => {
             await Animal.find({}).then((data) => {
                 res.status(200).send({
                     status: "OK",
-                    animals: data
+                    animals: data,
+                    nbChien: data.filter(i => i.espece === "chien").length,
+                    nbChat: data.filter(i => i.espece === "chat").length
                 })
             })
         } catch (error) {
