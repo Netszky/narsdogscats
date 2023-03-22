@@ -6,7 +6,7 @@ import { filterAnimals } from '~/utils/filterAnimal';
 
 export const createAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
-        const { caractere, nom, age, race, sexe, entente, adoption, espece, taille, birthdate } = req.body
+        const { caractere, nom, age, race, sexe, entente, adoption, espece, taille, birthdate, idFamily } = req.body
         ////// ENVOYER LES DATES EN FORMAT ANGLAIS
         const date: Date = parseDate(birthdate)
         let currentDate = new Date();
@@ -22,7 +22,8 @@ export const createAnimal = async (req: Request, res: Response) => {
             typeAdoption: adoption.toLowerCase(),
             espece: espece.toLowerCase(),
             taille: taille.toLowerCase(),
-            birthdate: date
+            birthdate: date,
+            idFamily: idFamily
         });
         await animal.save()
             .then((data) => {
