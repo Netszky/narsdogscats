@@ -6,8 +6,9 @@ import { filterAnimals } from '~/utils/filterAnimal';
 
 export const createAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
-        const { caractere, nom, age, race, sexe, entente, adoption, espece, taille, birthdate, idFamily } = req.body
+        const { caractere, nom, race, sexe, entente, adoption, espece, taille, birthdate, idFamily } = req.body
         ////// ENVOYER LES DATES EN FORMAT ANGLAIS
+
         const date: Date = parseDate(birthdate)
         let currentDate = new Date();
         let ageInMilliseconds = currentDate.getTime() - date.getTime();
@@ -18,12 +19,12 @@ export const createAnimal = async (req: Request, res: Response) => {
             race: race.toLowerCase(),
             sexe: sexe,
             caractere: caractere,
-            entente: entente.toLowerCase(),
+            entente: entente,
             typeAdoption: adoption.toLowerCase(),
             espece: espece.toLowerCase(),
             taille: taille.toLowerCase(),
             birthdate: date,
-            idFamily: idFamily
+            idFamily: idFamily,
         });
         await animal.save()
             .then((data) => {
@@ -78,7 +79,27 @@ export const getAllAnimals = async (req: Request, res: Response) => {
     }
 
 }
+
+
+export const getLatestAnimal = async (req: Request, res: Response) => {
+    try {
+        await Animal.find({}).sort({ createdAt: -1 }).limit(3)
+            .then((data) => res.status(200).send({
+                status: "OK",
+                animals: data
+            }))
+    } catch (error) {
+        res.status(404).send({
+            status: "NOK",
+            message: "Aucun animal trouvé"
+        })
+    }
+};
+
+
+
 export const getAnimal = async (req: Request, res: Response) => {
+
     try {
         await Animal.findById(req.params.id)
             .then((data) => res.status(200).send({

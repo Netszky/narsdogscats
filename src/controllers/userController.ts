@@ -69,26 +69,7 @@ export const register = async (req: Request, res: Response) => {
                 message: "Utilisateur créé",
                 token: userToken
             })
-            // let client = require('@sendgrid/mail');
-            // client.setApiKey(process.env.SEND_GRID);
 
-            // client.send({
-            //     to: {
-            //         email: data.email,
-            //         name: data.firstname
-            //     },
-            //     from: {
-            //         email: "julien.chigot@ynov.com",
-            //         name: "Julien Chigot"
-            //     },
-            //     templateId: "d-5304813abf6c4ab580c29287372e5ca3",
-            //     dynamicTemplateData: {
-            //         name: data.firstname,
-            //         email: data.email
-            //     }
-            // }).then(() => {
-            //     console.log("Email Sent")
-            // })
         })
         .catch((err) => {
             res.status(500).send({

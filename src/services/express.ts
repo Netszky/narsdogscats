@@ -18,13 +18,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// app.use((req: Request, res: Response, next) => {
-//   if (req.headers.origin !== 'https://les-animaux-du-27.fr') {
-//     return res.status(403).send('Not allowed');
-//   }
-//   next();
-// });
-
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use('/api/v1', apiRouter);
 

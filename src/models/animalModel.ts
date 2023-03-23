@@ -18,7 +18,7 @@ export interface IAnimal {
 
 const AnimalSchema = new Schema<IAnimal>({
     nom: { type: String, required: true },
-    age: { type: Number, required: true },
+    age: { type: Number, required: false },
     race: { type: String, required: true },
     sexe: { type: String, required: true },
     caractere: { type: String, required: true },
@@ -44,8 +44,8 @@ const AnimalSchema = new Schema<IAnimal>({
     image: [{
         type: String,
         required: false
-    }]
-});
+    }],
+}, { timestamps: true });
 
 const Animal = model<IAnimal>('Animal', AnimalSchema);
 export default Animal;
