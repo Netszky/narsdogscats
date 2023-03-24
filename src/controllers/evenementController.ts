@@ -8,7 +8,7 @@ export const createEvenement = async (req: Request, res: Response) => {
     console.log(req);
     if ((req as CustomRequest).user.isAdmin) {
 
-        const { nom, url, telephone, mail, image, date } = req.body
+        const { nom, url, telephone, mail, image, date, localisation } = req.body
 
         const evenement = new Evenement({
             nom: nom,
@@ -16,7 +16,8 @@ export const createEvenement = async (req: Request, res: Response) => {
             telephone: telephone,
             mail: mail,
             image: image,
-            date: date
+            date: date,
+            localisation: localisation
         });
         await evenement.save()
             .then((data) => {
@@ -43,7 +44,7 @@ export const getAllEvenement = async (req: Request, res: Response) => {
         await Evenement.find().then((data) => {
             res.status(200).send({
                 message: "OK",
-                partenaire: data,
+                evenement: data,
 
             })
         })
@@ -102,7 +103,7 @@ export const deleteEvenement = async (req: Request, res: Response) => {
 
 export const updateEvenement = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
-        const { nom, url, telephone, mail, image, date } = req.body
+        const { nom, url, telephone, mail, image, date, localisation } = req.body
         const exist = await Evenement.exists({ _id: req.params.id })
         if (exist) {
             try {
@@ -112,7 +113,8 @@ export const updateEvenement = async (req: Request, res: Response) => {
                     telephone: telephone,
                     mail: mail,
                     image: image,
-                    date: date
+                    date: date,
+                    loacalisation: localisation
                 }, { new: true, omitUndefined: true })
                     .then((data) => {
                         res.status(200).send({

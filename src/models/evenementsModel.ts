@@ -7,7 +7,8 @@ export interface IEvenement {
     telephone: string,
     mail: string,
     image: string,
-    date: Date
+    date: Date,
+    localisation: string
 }
 
 const EvenementSchema = new Schema<IEvenement>({
@@ -16,7 +17,8 @@ const EvenementSchema = new Schema<IEvenement>({
     telephone: { type: String, required: false },
     mail: { type: String, required: false },
     image: { type: String, required: false },
-    date: { type: Date, required: false }
+    date: { type: Date, required: false },
+    localisation: { type: String, required: false }
 
 });
 
