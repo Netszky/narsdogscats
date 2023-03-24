@@ -42,7 +42,6 @@ export const createAnimal = async (req: Request, res: Response) => {
             })
     } else {
         res.status(401).send({
-            status: "Unauthorized",
             message: "Not admin"
         })
     }
@@ -53,7 +52,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
         const query = filterAnimals(req.query)
         await Animal.find(query).then((data) => {
             res.status(200).send({
-                status: "OK",
+                message: "OK",
                 animals: data,
                 nbChien: data.filter(i => i.espece === "chien").length,
                 nbChat: data.filter(i => i.espece === "chat").length
@@ -64,7 +63,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
         try {
             await Animal.find({}).then((data) => {
                 res.status(200).send({
-                    status: "OK",
+                    message: "OK",
                     animals: data,
                     nbChien: data.filter(i => i.espece === "chien").length,
                     nbChat: data.filter(i => i.espece === "chat").length
@@ -72,7 +71,6 @@ export const getAllAnimals = async (req: Request, res: Response) => {
             })
         } catch (error) {
             res.status(404).send({
-                status: "NOK",
                 message: "Aucun animal trouvé"
             })
         }
@@ -85,12 +83,11 @@ export const getLatestAnimal = async (req: Request, res: Response) => {
     try {
         await Animal.find({}).sort({ createdAt: -1 }).limit(3)
             .then((data) => res.status(200).send({
-                status: "OK",
+                message: "OK",
                 animals: data
             }))
     } catch (error) {
         res.status(404).send({
-            status: "NOK",
             message: "Aucun animal trouvé"
         })
     }
@@ -103,12 +100,11 @@ export const getAnimal = async (req: Request, res: Response) => {
     try {
         await Animal.findById(req.params.id)
             .then((data) => res.status(200).send({
-                status: "OK",
+                message: "OK",
                 animal: data
             }))
     } catch (error) {
         res.status(404).send({
-            status: "NOK",
             message: "Aucun animal trouvé"
         })
     }
@@ -121,25 +117,21 @@ export const deleteAnimal = async (req: Request, res: Response) => {
             try {
                 await Animal.findByIdAndDelete(req.params.id).then((data) => {
                     res.status(200).send({
-                        status: "OK",
                         message: "Animal Deleted",
                     })
                 })
             } catch (error) {
                 res.status(404).send({
-                    status: "NOK",
                     message: "Aucun animal trouvé"
                 })
             }
         } else {
             res.status(404).send({
-                status: "NOK",
                 message: "Aucun animal trouvé"
             })
         }
     } else {
         res.status(401).send({
-            status: "Unauthorized",
             message: "Not admin"
         })
     }
@@ -166,7 +158,6 @@ export const updateAnimal = async (req: Request, res: Response) => {
                 }, { new: true, omitUndefined: true })
                     .then((data) => {
                         res.status(200).send({
-                            status: "OK",
                             message: "Animal Update",
                             animal: data
                         })
@@ -176,13 +167,11 @@ export const updateAnimal = async (req: Request, res: Response) => {
             }
         } else {
             res.status(404).send({
-                status: "NOK",
                 message: "Aucun animal trouvé"
             })
         }
     } else {
         res.status(401).send({
-            status: "Unauthorized",
             message: "Not admin"
         })
     }

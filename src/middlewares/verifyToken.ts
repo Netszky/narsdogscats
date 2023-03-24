@@ -13,8 +13,6 @@ export interface CustomRequest extends Request {
 };
 
 
-
-
 export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     const SECRET_JWT: Secret = process.env.SECRET_JWT!;
     try {
@@ -28,6 +26,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
         const decoded = jwt.verify(token, SECRET_JWT) as IUserToken;
         (req as CustomRequest).user = decoded;
+
 
         next();
     } catch (err) {
