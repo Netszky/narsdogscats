@@ -5,6 +5,7 @@ import User from '~/models/userModel';
 import { CustomRequest } from '~/middlewares/verifyToken';
 
 export const login = async (req: Request, res: Response) => {
+    console.log('here');
 
     const SECRET_JWT: Secret = process.env.SECRET_JWT!
     console.log(req.body);
@@ -39,7 +40,7 @@ export const login = async (req: Request, res: Response) => {
         console.log(err.message);
         return res.status(401).send({
             error: 401,
-            message: err.message || "User Unknown"
+            message: "User Unknown"
         })
     })
 };
