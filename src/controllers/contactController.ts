@@ -18,19 +18,49 @@ export const createContact = async (req: Request, res: Response) => {
     });
     await contact.save()
         .then((data) => {
-            res.status(200).send({
-                message: "OK",
-                contact: data
+            res.status(201).send({
+                status: 201
             })
         }).catch((err) => {
             res.status(500).send({
-                error: "Something went wrong"
+                status: 500
             })
         })
         .catch((err) => {
             console.log(err);
             res.status(500).send({
-                message: "Impossible de créer l'evenement"
+                status: 500
+            })
+        })
+}
+
+
+export const createContactBenevole = async (req: Request, res: Response) => {
+
+    const { type, telephone, email, content, nom, prenom } = req.body
+
+    const contact = new Contact({
+        type: "Demande de validation famille d'accueil",
+        telephone: telephone,
+        email: email,
+        content: content,
+        nom: nom,
+        prenom: prenom
+    });
+    await contact.save()
+        .then((data) => {
+            res.status(201).send({
+                status: 201,
+            })
+        }).catch((err) => {
+            res.status(500).send({
+                status: 500
+            })
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).send({
+                status: 500
             })
         })
 }
