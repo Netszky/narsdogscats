@@ -109,6 +109,20 @@ export const getAnimal = async (req: Request, res: Response) => {
         })
     }
 };
+export const getAnimalContact = async (req: Request, res: Response) => {
+
+    try {
+        await Animal.findById(req.params.id).populate("contact")
+            .then((data) => res.status(200).send({
+                message: "OK",
+                animal: data
+            }))
+    } catch (error) {
+        res.status(404).send({
+            message: "Aucun animal trouvé"
+        })
+    }
+};
 
 export const deleteAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
