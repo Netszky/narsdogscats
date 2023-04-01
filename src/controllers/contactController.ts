@@ -35,37 +35,6 @@ export const createContact = async (req: Request, res: Response) => {
 }
 
 
-export const createContactBenevole = async (req: Request, res: Response) => {
-
-    const { type, telephone, email, content, nom, prenom } = req.body
-
-    const contact = new Contact({
-        type: "Demande de validation famille d'accueil",
-        telephone: telephone,
-        email: email,
-        content: content,
-        nom: nom,
-        prenom: prenom
-    });
-    await contact.save()
-        .then((data) => {
-            res.status(201).send({
-                status: 201,
-            })
-        }).catch((err) => {
-            res.status(500).send({
-                status: 500
-            })
-        })
-        .catch((err) => {
-            console.log(err);
-            res.status(500).send({
-                status: 500
-            })
-        })
-}
-
-
 export const createContactAnimal = async (req: Request, res: Response) => {
 
     const { type, telephone, email, content, nom, prenom } = req.body

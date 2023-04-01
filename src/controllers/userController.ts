@@ -3,9 +3,9 @@ import bcrypt from 'bcrypt'
 import jwt, { Secret } from 'jsonwebtoken';
 import User from '~/models/userModel';
 import { CustomRequest } from '~/middlewares/verifyToken';
+import FamAccueil from '~/models/famAccueil';
 
 export const login = async (req: Request, res: Response) => {
-    console.log('here');
 
     const SECRET_JWT: Secret = process.env.SECRET_JWT!
     console.log(req.body);
@@ -19,6 +19,7 @@ export const login = async (req: Request, res: Response) => {
             let userToken = jwt.sign({
                 id: data!._id!,
                 isAdmin: data!.isAdmin,
+                isSuperAdmin: data!.isSuperAdmin
             },
                 SECRET_JWT,
                 {
@@ -156,3 +157,50 @@ export const verifyRole = async (req: Request, res: Response) => {
         })
     }
 };
+
+
+export const createBenevole = async (req: Request, res: Response) => {
+    const SECRET_JWT: Secret = process.env.SECRET_JWT!
+    const hashPassword = bcrypt.hashSync(req.body.user.password, 10);
+    const user = new User({
+        firstname: req.body.user.firstname,
+        lastname: req.body.user.lastname,
+        email: req.body.user.email.toLowerCase(),
+        password: hashPassword
+    })
+    await user.save()
+        .then(async (data) => {
+            if (data) {
+
+                const famille = new FamAccueil({
+                    telephone: req.body.famAccueil.telephone,
+                    email: req.body.famAccueil.email,
+                    adresse: req.body.famAccueil.adresse,
+                    capaciteChat: req.body.famAccueil.capaciteChat,
+                    capaciteChien: req.body.famAccueil.capaciteChien
+                })
+                await famille.save().then((newFamille) => {
+                    if (newFamille) {
+                        res.status(201).send({
+                            status: 201
+                        })
+                    } else {
+                        res.status(500).send({
+                            status: 500
+                        })
+                    }
+                })
+            } else {
+                res.status(500).send({
+                    status: 500
+                })
+            }
+
+        })
+        .catch((err) => {
+            res.status(500).send({
+                error: 500,
+                message: err.message || "Error"
+            })
+        })
+}
