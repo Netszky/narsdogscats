@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { createBenevole, login, register, resetPassword, updateResetPassword, verifyRole } from '~/controllers/userController';
+import { createBenevole, login, register, resetPassword, updateResetPassword, verifyAdmin, verifyFamille } from '~/controllers/userController';
 import { verifyToken } from '~/middlewares/verifyToken';
 
 const router = express.Router()
@@ -7,7 +7,8 @@ router.post("/login", login)
 router.post("/register", register)
 router.post("/reset-password", resetPassword)
 router.post("/update-password", updateResetPassword);
-router.get("/role", verifyToken, verifyRole);
+router.get("/admin", verifyToken, verifyAdmin);
+router.get("/verify-famille", verifyToken, verifyFamille);
 router.post("/benevole", createBenevole);
 
 

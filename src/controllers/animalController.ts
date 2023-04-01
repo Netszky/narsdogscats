@@ -30,19 +30,19 @@ export const createAnimal = async (req: Request, res: Response) => {
             .then((data) => {
                 res.status(201).send({
                     animal: data,
-                    message: "Animal Créé"
+                    status: 201
                 })
             })
             .catch((err) => {
                 console.log(err);
 
                 res.status(500).send({
-                    message: "Impossible de créer l'animal"
+                    status: 500
                 })
             })
     } else {
-        res.status(401).send({
-            message: "Not admin"
+        res.status(403).send({
+            status: 403
         })
     }
 }
@@ -52,7 +52,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
         const query = filterAnimals(req.query)
         await Animal.find(query).then((data) => {
             res.status(200).send({
-                message: "OK",
+                status: 200,
                 animals: data,
                 nbChien: data.filter(i => i.espece === "chien").length,
                 nbChat: data.filter(i => i.espece === "chat").length
@@ -63,15 +63,15 @@ export const getAllAnimals = async (req: Request, res: Response) => {
         try {
             await Animal.find({}).then((data) => {
                 res.status(200).send({
-                    message: "OK",
+                    status: 200,
                     animals: data,
                     nbChien: data.filter(i => i.espece === "chien").length,
                     nbChat: data.filter(i => i.espece === "chat").length
                 })
             })
         } catch (error) {
-            res.status(404).send({
-                message: "Aucun animal trouvé"
+            res.status(500).send({
+                status: 500
             })
         }
     }
@@ -83,12 +83,12 @@ export const getLatestAnimal = async (req: Request, res: Response) => {
     try {
         await Animal.find({}).sort({ createdAt: -1 }).limit(3)
             .then((data) => res.status(200).send({
-                message: "OK",
+                status: 200,
                 animals: data
             }))
     } catch (error) {
-        res.status(404).send({
-            message: "Aucun animal trouvé"
+        res.status(500).send({
+            status: 500
         })
     }
 };
@@ -100,12 +100,12 @@ export const getAnimal = async (req: Request, res: Response) => {
     try {
         await Animal.findById(req.params.id)
             .then((data) => res.status(200).send({
-                message: "OK",
+                status: 200,
                 animal: data
             }))
     } catch (error) {
-        res.status(404).send({
-            message: "Aucun animal trouvé"
+        res.status(500).send({
+            status: 500
         })
     }
 };
@@ -114,12 +114,12 @@ export const getAnimalContact = async (req: Request, res: Response) => {
     try {
         await Animal.findById(req.params.id).populate("contact")
             .then((data) => res.status(200).send({
-                message: "OK",
+                status: 200,
                 animal: data
             }))
     } catch (error) {
-        res.status(404).send({
-            message: "Aucun animal trouvé"
+        res.status(500).send({
+            status: 500
         })
     }
 };
@@ -131,22 +131,22 @@ export const deleteAnimal = async (req: Request, res: Response) => {
             try {
                 await Animal.findByIdAndDelete(req.params.id).then((data) => {
                     res.status(200).send({
-                        message: "Animal Deleted",
+                        status: 200
                     })
                 })
             } catch (error) {
-                res.status(404).send({
-                    message: "Aucun animal trouvé"
+                res.status(500).send({
+                    status: 500
                 })
             }
         } else {
-            res.status(404).send({
-                message: "Aucun animal trouvé"
+            res.status(500).send({
+                status: 500
             })
         }
     } else {
-        res.status(401).send({
-            message: "Not admin"
+        res.status(403).send({
+            status: 403
         })
     }
 }
@@ -172,21 +172,20 @@ export const updateAnimal = async (req: Request, res: Response) => {
                 }, { new: true, omitUndefined: true })
                     .then((data) => {
                         res.status(200).send({
-                            message: "Animal Update",
-                            animal: data
+                            status: 200
                         })
                     })
             } catch (error) {
-                res.status(500).send({ status: "NOK" })
+                res.status(500).send({ status: 500 })
             }
         } else {
-            res.status(404).send({
-                message: "Aucun animal trouvé"
+            res.status(500).send({
+                status: 500
             })
         }
     } else {
-        res.status(401).send({
-            message: "Not admin"
+        res.status(403).send({
+            status: 403
         })
     }
 }

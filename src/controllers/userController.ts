@@ -17,9 +17,11 @@ export const login = async (req: Request, res: Response) => {
         if (bcrypt.compareSync(req.body.password.toLowerCase(), data!.password)) {
 
             let userToken = jwt.sign({
-                id: data!._id!,
+                id: data!._id,
                 isAdmin: data!.isAdmin,
-                isSuperAdmin: data!.isSuperAdmin
+                isSuperAdmin: data!.isSuperAdmin,
+                fam: data?.famAccueil && data?.famAccueil
+
             },
                 SECRET_JWT,
                 {
@@ -29,10 +31,10 @@ export const login = async (req: Request, res: Response) => {
             res.send({
                 token: userToken,
                 auth: true,
+                firstname: data!.firstname,
             })
         } else {
             res.status(401).send({
-                message: "Password invalid",
                 auth: false,
                 token: null
             })
@@ -60,7 +62,9 @@ export const register = async (req: Request, res: Response) => {
         .then((data) => {
             let userToken = jwt.sign({
                 id: data._id,
-                isAdmin: data.isAdmin
+                isAdmin: data.isAdmin,
+                fam: data?.famAccueil && data?.famAccueil
+
             }, SECRET_JWT,
                 {
                     expiresIn: 80000
@@ -68,8 +72,8 @@ export const register = async (req: Request, res: Response) => {
 
             )
             res.status(201).send({
-                message: "Utilisateur créé",
-                token: userToken
+                token: userToken,
+                firstname: data?.firstname,
             })
 
         })
@@ -144,15 +148,37 @@ export const updateResetPassword = async (req: Request, res: Response) => {
 
 };
 
-export const verifyRole = async (req: Request, res: Response) => {
+export const verifyFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
+        const id = (req as CustomRequest).user.id
+        User.findById(id).populate("famAccueil").then((user) => {
+            if (user?.famAccueil) {
+                res.status(200).send({
+                    isAdmin: true,
+                    actif: user.famAccueil.actif,
+                })
+            } else {
+                res.status(403).send({
+                    status: 403
+                })
+            }
+        })
+    } else {
+        res.status(403).send({
+            status: 403,
+            isAdmin: false
+        })
+    }
+};
+export const verifyAdmin = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
         res.status(200).send({
-            status: "OK",
+            status: 200,
             isAdmin: true
         })
     } else {
-        res.status(401).send({
-            status: "OK",
+        res.status(403).send({
+            status: 403,
             isAdmin: false
         })
     }
@@ -160,27 +186,26 @@ export const verifyRole = async (req: Request, res: Response) => {
 
 
 export const createBenevole = async (req: Request, res: Response) => {
-    const SECRET_JWT: Secret = process.env.SECRET_JWT!
     const hashPassword = bcrypt.hashSync(req.body.user.password, 10);
-    const user = new User({
-        firstname: req.body.user.firstname,
-        lastname: req.body.user.lastname,
-        email: req.body.user.email.toLowerCase(),
-        password: hashPassword
+    const famille = new FamAccueil({
+        telephone: req.body.famAccueil.telephone,
+        email: req.body.famAccueil.email,
+        adresse: req.body.famAccueil.adresse,
+        capaciteChat: req.body.famAccueil.capaciteChat,
+        capaciteChien: req.body.famAccueil.capaciteChien
     })
-    await user.save()
+    await famille.save()
         .then(async (data) => {
             if (data) {
-
-                const famille = new FamAccueil({
-                    telephone: req.body.famAccueil.telephone,
-                    email: req.body.famAccueil.email,
-                    adresse: req.body.famAccueil.adresse,
-                    capaciteChat: req.body.famAccueil.capaciteChat,
-                    capaciteChien: req.body.famAccueil.capaciteChien
+                const user = new User({
+                    firstname: req.body.user.firstname,
+                    lastname: req.body.user.lastname,
+                    email: req.body.user.email.toLowerCase(),
+                    password: hashPassword,
+                    famAccueil: data._id
                 })
-                await famille.save().then((newFamille) => {
-                    if (newFamille) {
+                await user.save().then((newUser) => {
+                    if (newUser) {
                         res.status(201).send({
                             status: 201
                         })

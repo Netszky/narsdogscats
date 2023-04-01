@@ -5,6 +5,7 @@ interface IUserToken {
     id: string,
     isAdmin: boolean,
     isSuperAdmin: boolean,
+    fam: string | null,
     iat: number,
     exp: number
 }

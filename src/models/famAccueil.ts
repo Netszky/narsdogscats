@@ -1,6 +1,8 @@
 // AGE RACE SEXE CARACTERE ENTENTE TYPE DADOPTION TAILLE
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model, Types, ObjectId } from 'mongoose';
+import { IAnimal } from './animalModel';
 export interface IFamAccueil {
+    _id: ObjectId,
     telephone: string,
     email: string,
     adresse: string,
@@ -8,8 +10,8 @@ export interface IFamAccueil {
     capaciteChat: number,
     capaciteActuelleChien: number,
     capaciteActuelleChat: number,
-    user: Types.ObjectId,
-    actif: boolean
+    actif: boolean,
+    animals: IAnimal[]
 }
 
 const FamAccueilSchema = new Schema<IFamAccueil>({
@@ -21,7 +23,7 @@ const FamAccueilSchema = new Schema<IFamAccueil>({
     capaciteActuelleChat: { type: Number, required: true, default: 0 },
     adresse: { type: String, required: true },
     actif: { type: Boolean, required: false, default: false },
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: false }
+    animals: [{ type: Schema.Types.ObjectId, ref: 'Animal', required: false },]
 });
 
 const FamAccueil = model<IFamAccueil>('FamAccueil', FamAccueilSchema);

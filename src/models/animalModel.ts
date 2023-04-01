@@ -12,7 +12,6 @@ export interface IAnimal {
     typeAdoption: string,
     taille: string,
     birthdate: Date,
-    idFamily: Types.ObjectId,
     contact: Types.ObjectId,
     image: string[]
 }
@@ -42,7 +41,6 @@ const AnimalSchema = new Schema<IAnimal>({
     },
     taille: { type: String, required: false, enum: ["petit", "grand"] },
     birthdate: { type: Date, required: false },
-    idFamily: { type: Schema.Types.ObjectId, ref: "FamAccueil" },
     contact: [{ type: Schema.Types.ObjectId, ref: "Contact" }],
     image: [{
         type: String,
