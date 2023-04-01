@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 interface IUserToken {
     id: string,
     isAdmin: boolean,
+    isSuperAdmin: boolean,
     iat: number,
     exp: number
 }
