@@ -58,7 +58,12 @@ export const validateFamilleAccueil = (req: Request, res: Response) => {
 export const getAnimals = (req: Request, res: Response) => {
     const id = (req as CustomRequest).user.fam
 
-    FamAccueil.findById(id).populate("animals")
+    FamAccueil.findById(id).populate({
+        path: 'animals', populate: {
+            path: 'contact',
+            match: { closed: false }
+        }
+    })
         .then((data) => {
             res.status(200).send({
                 status: 200,
@@ -66,6 +71,8 @@ export const getAnimals = (req: Request, res: Response) => {
             })
         })
         .catch((err) => {
+            console.log(err);
+
             res.status(500).send({
                 status: 500,
                 animals: null

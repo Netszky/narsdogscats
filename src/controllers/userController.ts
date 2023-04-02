@@ -8,7 +8,6 @@ import FamAccueil from '~/models/famAccueil';
 export const login = async (req: Request, res: Response) => {
 
     const SECRET_JWT: Secret = process.env.SECRET_JWT!
-    console.log(req.body);
 
     const email = req.body.email.toLowerCase()
     await User.findOne({
@@ -154,7 +153,7 @@ export const verifyFamille = async (req: Request, res: Response) => {
         User.findById(id).populate("famAccueil").then((user) => {
             if (user?.famAccueil) {
                 res.status(200).send({
-                    isAdmin: true,
+                    isAdmin: user.isAdmin,
                     actif: user.famAccueil.actif,
                 })
             } else {
@@ -174,12 +173,12 @@ export const verifyAdmin = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         res.status(200).send({
             status: 200,
-            isAdmin: true
+            isSuperAdmin: true
         })
     } else {
         res.status(403).send({
             status: 403,
-            isAdmin: false
+            isSuperAdmin: false
         })
     }
 };

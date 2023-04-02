@@ -50,7 +50,9 @@ export const createContactAnimal = async (req: Request, res: Response) => {
     await contact.save()
         .then((data) => {
             Animal.findByIdAndUpdate(req.params.id, {
-                contact: data._id
+                $push: {
+                    contact: data._id
+                }
             }, { new: true, omitUndefined: true })
                 .then((newAnimal) => {
                     console.log(newAnimal);

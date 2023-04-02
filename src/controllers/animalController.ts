@@ -37,7 +37,6 @@ export const createAnimal = async (req: Request, res: Response) => {
         try {
             const uploadResults = await Promise.all(uploadPromises);
             const imagesUrls = uploadResults.map(result => result.url);
-            console.log(imagesUrls);
 
             const { caractere, nom, race, sexe, entente, typeAdoption, espece, taille, birthdate } = req.body
 
@@ -193,9 +192,27 @@ export const deleteAnimal = async (req: Request, res: Response) => {
         if (exist) {
             try {
                 await Animal.findByIdAndDelete(req.params.id).then((data) => {
-                    res.status(200).send({
-                        status: 200
-                    })
+                    if (data?.image) {
+                        const deletePromises = data?.image?.map((url) => {
+                            return new Promise<void>((resolve, reject) => {
+                                const publicId = getPublicIdFromUrl(url);
+                                if (publicId) {
+                                    deleteImageFromCloudinary(publicId)
+                                        .then(() => resolve())
+                                        .catch((error) => reject(error));
+                                } else {
+                                    reject(new Error('Invalid image URL'));
+                                }
+                            });
+                        });
+                        Promise.all(deletePromises)
+                            .then(() => res.status(200).send({ status: 200 }))
+                            .catch((error) => res.status(500).send({ status: 500 }));
+                    } else {
+                        res.status(200).send({
+                            status: 200
+                        })
+                    }
                 })
             } catch (error) {
                 res.status(500).send({

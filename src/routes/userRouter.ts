@@ -10,6 +10,7 @@ router.post("/update-password", updateResetPassword);
 router.get("/admin", verifyToken, verifyAdmin);
 router.get("/verify-famille", verifyToken, verifyFamille);
 router.post("/benevole", createBenevole);
+// router.get("/famille-status", verifyToken,)
 
 
 export default router;
