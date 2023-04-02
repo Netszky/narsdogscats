@@ -20,13 +20,13 @@ const AnimalSchema = new Schema<IAnimal>({
     nom: { type: String, required: true },
     age: { type: Number, required: false },
     race: { type: String, required: true },
-    sexe: { type: String, required: true },
+    sexe: { type: String, required: true, enum: ["F", "M"] },
     caractere: { type: String, required: true },
     entente: [
         {
             type: String,
             required: true,
-            enum: ["chat", "chien", "enfant", "autre"]
+            enum: ["chat", "chien", "enfant"]
         }
     ],
     typeAdoption: {
@@ -39,7 +39,7 @@ const AnimalSchema = new Schema<IAnimal>({
         required: true,
         enum: ["chat", "chien"]
     },
-    taille: { type: String, required: false, enum: ["petit", "grand"] },
+    taille: { type: String, required: false, enum: ["petit", "moyen", "grand"] },
     birthdate: { type: Date, required: false },
     contact: [{ type: Schema.Types.ObjectId, ref: "Contact" }],
     image: [{

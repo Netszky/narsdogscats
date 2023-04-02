@@ -3,8 +3,11 @@ import jwt, { Secret } from "jsonwebtoken";
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      SECRET_JWT: Secret
-      PORT: Number;
+      SECRET_JWT: Secret,
+      PORT: Number,
+      CLOUDINARY_SECRET: string,
+      CLOUDINARY_API: string,
+      CLOUDNAME: string
     }
   }
 }

@@ -1,5 +1,5 @@
 // AGE RACE SEXE CARACTERE ENTENTE TYPE DADOPTION TAILLE
-import { Schema, model, Types, ObjectId } from 'mongoose';
+import { Schema, model, ObjectId } from 'mongoose';
 import { IAnimal } from './animalModel';
 export interface IFamAccueil {
     _id: ObjectId,

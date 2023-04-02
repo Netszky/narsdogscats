@@ -1,51 +1,114 @@
 import { Request, Response } from 'express';
 import Animal from '~/models/animalModel';
 import { CustomRequest } from '~/middlewares/verifyToken';
-import { parseDate } from '~/utils/parseDate';
+
 import { filterAnimals } from '~/utils/filterAnimal';
+import cloudinary from 'cloudinary';
+import streamifier from 'streamifier';
+import { deleteImageFromCloudinary, getPublicIdFromUrl } from '~/utils/cloudinary';
+import FamAccueil from '~/models/famAccueil';
+interface UploadResult {
+    url: string;
+}
 
 export const createAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
-        const { caractere, nom, race, sexe, entente, adoption, espece, taille, birthdate, idFamily } = req.body
-        ////// ENVOYER LES DATES EN FORMAT ANGLAIS
+        const idFamily = (req as CustomRequest).user.fam
 
-        const date: Date = parseDate(birthdate)
-        let currentDate = new Date();
-        let ageInMilliseconds = currentDate.getTime() - date.getTime();
-        let ageInYears = ageInMilliseconds / (1000 * 60 * 60 * 24 * 365.25);
-        const animal = new Animal({
-            nom: nom,
-            age: Math.floor(ageInYears),
-            race: race.toLowerCase(),
-            sexe: sexe,
-            caractere: caractere,
-            entente: entente,
-            typeAdoption: adoption.toLowerCase(),
-            espece: espece.toLowerCase(),
-            taille: taille.toLowerCase(),
-            birthdate: date,
-            idFamily: idFamily,
+        if (!('images' in req.files!)) {
+            return res.status(400).send("Missing 'images' field");
+        }
+        const images = req.files['images'] as Express.Multer.File[];
+
+        const uploadPromises = images.map((image: Express.Multer.File) => {
+            const imageStream = streamifier.createReadStream(image.buffer);
+            return new Promise<UploadResult>((resolve, reject) => {
+                const uploadStream = cloudinary.v2.uploader.upload_stream({ folder: 'animaux', format: 'webp' }, (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result as UploadResult);
+                    }
+                });
+                imageStream.pipe(uploadStream);
+            });
         });
-        await animal.save()
-            .then((data) => {
-                res.status(201).send({
-                    animal: data,
-                    status: 201
-                })
-            })
-            .catch((err) => {
-                console.log(err);
 
-                res.status(500).send({
-                    status: 500
+        try {
+            const uploadResults = await Promise.all(uploadPromises);
+            const imagesUrls = uploadResults.map(result => result.url);
+            console.log(imagesUrls);
+
+            const { caractere, nom, race, sexe, entente, typeAdoption, espece, taille, birthdate } = req.body
+
+            const date = new Date(birthdate);
+            const ageDifMs = Date.now() - date.getTime();
+            const ageDate = new Date(ageDifMs);
+            const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+            const animal = new Animal({
+                nom: nom,
+                age: age,
+                race: race.toLowerCase(),
+                sexe: sexe.toUpperCase(),
+                caractere: caractere,
+                entente: JSON.parse(entente.toLowerCase()),
+                typeAdoption: typeAdoption.toLowerCase(),
+                espece: espece.toLowerCase(),
+                taille: taille.toLowerCase(),
+                birthdate: birthdate,
+                image: imagesUrls
+            });
+            await animal.save()
+                .then((data) => {
+                    FamAccueil.findByIdAndUpdate(idFamily, {
+                        $push: {
+                            animals: animal._id
+                        }
+                    }, { omitUndefined: true })
+                        .then((update) => {
+                            res.status(201).send({
+                                status: 201
+                            })
+                        }).catch((err) => {
+                            res.status(500).send({
+                                status: 500
+                            })
+                        })
                 })
-            })
+                .catch((err) => {
+                    console.log(err);
+                    const deletePromises = imagesUrls.map((url) => {
+                        return new Promise<void>((resolve, reject) => {
+                            const publicId = getPublicIdFromUrl(url);
+                            if (publicId) {
+                                deleteImageFromCloudinary(publicId)
+                                    .then(() => resolve())
+                                    .catch((error) => reject(error));
+                            } else {
+                                reject(new Error('Invalid image URL'));
+                            }
+                        });
+                    });
+                    Promise.all(deletePromises)
+                        .then(() => res.status(500).send({ status: 500 }))
+                        .catch((error) => res.status(500).send({ status: 500 }));
+
+                })
+
+
+        } catch (error) {
+            console.error('Failed to upload images:', error);
+            res.status(500).send({ status: 500 });
+        }
+
     } else {
         res.status(403).send({
             status: 403
         })
     }
 }
+
 export const getAllAnimals = async (req: Request, res: Response) => {
 
     if (Object.keys(req.query).length > 0) {
@@ -152,15 +215,18 @@ export const deleteAnimal = async (req: Request, res: Response) => {
 }
 
 export const updateAnimal = async (req: Request, res: Response) => {
-    const date: Date = parseDate(req.body.birthdate)
     if ((req as CustomRequest).user.isAdmin) {
         const exist = await Animal.exists({ _id: req.params.id })
-        ////// ENVOYER LES DATES EN FORMAT ANGLAIS
+        const date = new Date(req.body.birthdate);
+        const ageDifMs = Date.now() - date.getTime();
+        const ageDate = new Date(ageDifMs);
+        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
         if (exist) {
             try {
                 await Animal.findByIdAndUpdate(req.params.id, {
                     nom: req.body.nom,
-                    age: req.body.age,
+                    age: age,
                     espece: req.body.espece,
                     race: req.body.race,
                     sexe: req.body.sexe,
@@ -168,7 +234,7 @@ export const updateAnimal = async (req: Request, res: Response) => {
                     caractere: req.body.caractere,
                     typeAdoption: req.body.adoption,
                     taille: req.body.taille,
-                    birthdate: date
+                    birthdate: req.body.birthdate
                 }, { new: true, omitUndefined: true })
                     .then((data) => {
                         res.status(200).send({
