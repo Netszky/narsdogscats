@@ -7,7 +7,9 @@ declare global {
       PORT: Number,
       CLOUDINARY_SECRET: string,
       CLOUDINARY_API: string,
-      CLOUDNAME: string
+      CLOUDNAME: string,
+      MAILJET_API: string,
+      MAILJET_SECRET: string
     }
   }
 }

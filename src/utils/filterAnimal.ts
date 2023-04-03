@@ -34,6 +34,7 @@ export const filterAnimals = (query: any): object => {
         const adoptionValues = adoption.split(',');
         filter.typeAdoption = { $in: adoptionValues.map((val: string) => new RegExp(val, 'i')) };
     }
+    filter.validated = true
 
     return filter
 }

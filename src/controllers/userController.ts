@@ -148,26 +148,19 @@ export const updateResetPassword = async (req: Request, res: Response) => {
 };
 
 export const verifyFamille = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isAdmin) {
-        const id = (req as CustomRequest).user.id
-        User.findById(id).populate("famAccueil").then((user) => {
-            if (user?.famAccueil) {
-                res.status(200).send({
-                    isAdmin: user.isAdmin,
-                    actif: user.famAccueil.actif,
-                })
-            } else {
-                res.status(403).send({
-                    status: 403
-                })
-            }
-        })
-    } else {
-        res.status(403).send({
-            status: 403,
-            isAdmin: false
-        })
-    }
+    const id = (req as CustomRequest).user.id
+    User.findById(id).populate("famAccueil").then((user) => {
+        if (user?.famAccueil) {
+            res.status(200).send({
+                isAdmin: user.isAdmin,
+                actif: user.famAccueil.actif,
+            })
+        } else {
+            res.status(200).send({
+                famille: false
+            })
+        }
+    })
 };
 export const verifyAdmin = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
@@ -223,8 +216,43 @@ export const createBenevole = async (req: Request, res: Response) => {
         })
         .catch((err) => {
             res.status(500).send({
-                error: 500,
-                message: err.message || "Error"
+                status: 500
+            })
+        })
+}
+export const addFamilleUser = async (req: Request, res: Response) => {
+    const id = (req as CustomRequest).user.id
+    const famille = new FamAccueil({
+        telephone: req.body.telephone,
+        email: req.body.email,
+        adresse: req.body.adresse,
+        capaciteChat: req.body.capaciteChat,
+        capaciteChien: req.body.capaciteChien
+    })
+    await famille.save()
+        .then(async (data) => {
+            if (data) {
+                User.findByIdAndUpdate(id, {
+                    famAccueil: data._id
+                }, { omitUndefined: true })
+                    .then(() => {
+                        res.status(201).send({
+                            status: 201
+                        })
+                    }).catch((err) => {
+                        res.status(500).send({
+                            status: 500
+                        })
+                    })
+            } else {
+                res.status(500).send({
+                    status: 500
+                })
+            }
+        })
+        .catch((err) => {
+            res.status(500).send({
+                status: 500
             })
         })
 }

@@ -32,7 +32,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
         next();
     } catch (err) {
-        res.status(401).send({ message: "Unauthorized" });
+        res.status(401).send({ status: "Unauthorized" });
     }
 };
 

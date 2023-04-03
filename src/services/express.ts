@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import apiRouter from '../routes/index';
 import cloudinary from 'cloudinary';
+import Mailjet from 'node-mailjet';
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ cloudinary.v2.config({
   api_key: process.env.CLOUDINARY_API,
   api_secret: process.env.CLOUDINARY_SECRET
 })
+export const mailjet = new Mailjet({ apiKey: process.env.MAILJET_API, apiSecret: process.env.MAILJET_SECRET })
+
 
 export const start: Server = app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);

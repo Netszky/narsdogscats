@@ -13,7 +13,8 @@ export interface IAnimal {
     taille: string,
     birthdate: Date,
     contact: Types.ObjectId,
-    image: string[]
+    image: string[],
+    validated: boolean
 }
 
 const AnimalSchema = new Schema<IAnimal>({
@@ -46,6 +47,7 @@ const AnimalSchema = new Schema<IAnimal>({
         type: String,
         required: false
     }],
+    validated: { type: Boolean, required: false, default: false }
 }, { timestamps: true });
 
 const Animal = model<IAnimal>('Animal', AnimalSchema);

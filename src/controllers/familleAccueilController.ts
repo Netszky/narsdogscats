@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import { CustomRequest } from '~/middlewares/verifyToken';
 import FamAccueil from '~/models/famAccueil';
+import User from '~/models/userModel';
+import { mailjet } from '~/services/express';
 
 
 export const createFamilleAccueil = (req: Request, res: Response) => {
-
     const { adresse, telephone, email, currentChat, capaciteChat, currentChien, capaciteChien } = req.body
-
     const famille = new FamAccueil({
         telephone: telephone,
         email: email,
@@ -21,6 +21,7 @@ export const createFamilleAccueil = (req: Request, res: Response) => {
         .then((data) => {
             res.status(201).send({
                 status: 201
+
             })
         }).catch((err) => {
             res.status(500).send({
@@ -36,13 +37,52 @@ export const createFamilleAccueil = (req: Request, res: Response) => {
 }
 
 export const validateFamilleAccueil = (req: Request, res: Response) => {
+
     if ((req as CustomRequest).user.isSuperAdmin) {
         FamAccueil.findByIdAndUpdate(req.params.id, {
-            actif: true
+            actif: req.body.actif
         }, { omitUndefined: true }).then((data) => {
-            res.status(200).send({
-                status: 200
+            User.findOne({ famAccueil: req.params.id }).then((user) => {
+                if (req.body.actif) {
+
+                    mailjet
+                        .post("send", { 'version': 'v3.1' })
+                        .request({
+                            "Messages": [
+                                {
+                                    "From": {
+                                        "Email": "lesanimauxdu27.web@gmail.com",
+                                        "Name": "Les Animaux du 27"
+                                    },
+                                    "To": [
+                                        {
+                                            "Email": user?.email,
+                                        }
+                                    ],
+                                    "TemplateID": 4707712,
+                                    "TemplateLanguage": true,
+                                    "Subject": "Demande Famille Accueil Validée !",
+                                    "Variables": {
+                                        "name": user?.firstname
+                                    }
+                                }
+                            ]
+                        }).then((mail) => {
+                            res.status(200).send({
+                                status: 200
+                            })
+                        }).catch((err) => {
+                            res.status(500).send({
+                                status: 500
+                            })
+                        })
+                } else {
+                    console.log("no mail");
+
+                }
             })
+
+
         }).catch((err) => {
             res.status(500).send({
                 status: 500
@@ -79,3 +119,30 @@ export const getAnimals = (req: Request, res: Response) => {
             })
         })
 }
+export const getInactiveFamille = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        FamAccueil.find({ actif: false }).then((data) => {
+            if (data) {
+                res.status(200).send({
+                    status: 200,
+                    familles: data
+                })
+            } else {
+                res.status(500).send({
+                    status: 500
+                })
+            }
+        }).catch((err) => {
+            res.status(500).send({
+                status: 500
+            })
+        })
+    } else {
+        res.status(403).send({
+            status: 403
+        })
+    }
+
+
+}
+

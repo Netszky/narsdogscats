@@ -43,6 +43,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.6.5",
     "multer": "^1.4.5-lts.1",
+    "node-mailjet": "^6.0.2",
     "streamifier": "^0.1.1"
   }
 }
