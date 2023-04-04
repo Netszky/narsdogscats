@@ -4,6 +4,7 @@ import jwt, { Secret } from 'jsonwebtoken';
 import User from '~/models/userModel';
 import { CustomRequest } from '~/middlewares/verifyToken';
 import FamAccueil from '~/models/famAccueil';
+import { mailjet } from '~/services/express';
 
 export const login = async (req: Request, res: Response) => {
 
@@ -84,65 +85,55 @@ export const register = async (req: Request, res: Response) => {
         })
 }
 export const resetPassword = async (req: Request, res: Response) => {
-    // await User.find({ email: req.body.email })
-    //     .then((user) => {
-    //         const newToken = jwt.sign({
-    //             id: data!._id!,
-    //             isAdmin: data!.isAdmin,
-    //         },
-    //             SECRET_JWT,
-    //             {
-    //                 expiresIn: 80000
-    //             }
-    //         )
-    //         updateUserResetToken(user, token)
-    //             .then((newUser) => {
-    //                 const email = sendEmail(newUser, token, 4276684, "Réinitialisation");
-    //                 if (email.message === "Email Send") {
-    //                     res.status(200).send({
-    //                         status: 200,
-    //                         message: email.message,
-    //                     });
-    //                 } else {
-    //                     res.status(500).send({
-    //                         status: 500,
-    //                         message: email.message,
-    //                     });
-    //                 }
-    //             })
-    //             .catch((err) => {
-    //                 console.log(err);
-    //             });
-    //     })
-    //     .catch((err) => {
-    //         console.log(err);
-    //     });
+    const SECRET_JWT: Secret = process.env.SECRET_JWT!
+    await User.findOne({ email: req.body.email })
+        .then((user) => {
+            const newToken = jwt.sign({
+                id: user?._id
+            },
+                SECRET_JWT,
+                {
+                    expiresIn: 80000
+                }
+            )
+            User.findByIdAndUpdate(user?._id, {
+                resetToken: newToken
+            }).then((data) => {
+                // mailjet.post()
+            }).catch(() => {
+                res.status(500).send({ status: 500 })
+            })
+        })
+        .catch((err) => {
+            console.log(err);
+        });
 };
 export const updateResetPassword = async (req: Request, res: Response) => {
-    //// PASSER LE TOKEN DANS LE HEADER
     const token = req.headers["authorization"]
     if (req.body.password) {
         const hasedPassword = bcrypt.hashSync(req.body.password, 10);
         try {
             await User.findOneAndUpdate({ resetToken: token },
-                { password: hasedPassword },
+                { password: hasedPassword, resetToken: '' },
                 {
                     new: true,
                     omitUndefined: true,
                 })
                 .then(() => {
                     res.status(200).send({
-                        status: "OK",
-                        message: "Password updated"
+                        status: 200
                     });
                 })
-                .catch((err) => res.status(500).send({ err: err }));
+                .catch((err) => res.status(500).send({ status: 500 }));
         } catch (error) {
-            res.status(401).send({
-                status: "NOK",
-                message: "Pas le bon token"
+            res.status(403).send({
+                status: 403
             })
         }
+    } else {
+        res.status(500).send({
+            status: 500
+        })
     }
 
 };
