@@ -85,25 +85,59 @@ export const register = async (req: Request, res: Response) => {
         })
 }
 export const resetPassword = async (req: Request, res: Response) => {
+
     const SECRET_JWT: Secret = process.env.SECRET_JWT!
     await User.findOne({ email: req.body.email })
         .then((user) => {
-            const newToken = jwt.sign({
-                id: user?._id
-            },
-                SECRET_JWT,
-                {
-                    expiresIn: 80000
-                }
-            )
-            User.findByIdAndUpdate(user?._id, {
-                resetToken: newToken
-            }).then((data) => {
-                // mailjet.post()
-            }).catch(() => {
+            if (user) {
+                const newToken = jwt.sign({
+                    id: user?._id
+                },
+                    SECRET_JWT,
+                    {
+                        expiresIn: 80000
+                    }
+                )
+                User.findByIdAndUpdate(user?._id, {
+                    resetToken: newToken
+                }, { omitUndefined: true, new: true }).then((data) => {
+                    mailjet.post("send", { 'version': 'v3.1' })
+                        .request({
+                            "Messages": [
+                                {
+                                    "From": {
+                                        "Email": "lesanimauxdu27.web@gmail.com",
+                                        "Name": "Les Animaux du 27"
+                                    },
+                                    "To": [
+                                        {
+                                            "Email": data?.email,
+                                        }
+                                    ],
+                                    "TemplateID": 4711617,
+                                    "TemplateLanguage": true,
+                                    "Subject": "Demande de reinitialisation de mot de passe",
+                                    "Variables": {
+                                        "nom": data?.firstname,
+                                        "url": `http://localhost:3000/reset-password?token=${data?.resetToken}`
+                                    }
+                                }
+                            ]
+                        }).then((mail) => {
+                            res.status(200).send({ status: 200 })
+                        }).catch((err) => {
+                            res.status(500).send({
+                                status: 500
+                            })
+                        })
+                }).catch(() => {
+                    res.status(500).send({ status: 500 })
+                })
+            } else {
                 res.status(500).send({ status: 500 })
-            })
+            }
         })
+
         .catch((err) => {
             console.log(err);
         });
