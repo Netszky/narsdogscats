@@ -20,7 +20,7 @@ const userSchema = new Schema<IUser>({
     isAdmin: { type: Boolean, requred: true, default: false },
     isSuperAdmin: { type: Boolean, requred: true, default: false },
     resetToken: { type: String, required: false },
-    famAccueil: { type: Schema.Types.ObjectId, ref: "FamAccueil", required: false }
+    famAccueil: { type: Schema.Types.ObjectId, ref: "FamAccueil", required: false, default: null }
 });
 
 const User = model<IUser>('User', userSchema);

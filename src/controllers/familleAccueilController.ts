@@ -36,6 +36,23 @@ export const createFamilleAccueil = (req: Request, res: Response) => {
         })
 }
 
+export const getAllFamilleAccueil = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        try {
+            const familles = await User.find({}).populate({
+                path: 'famAccueil',
+            })
+            const filteredUsers = familles.filter((user) => user.famAccueil !== null);
+            res.status(200).send({ familles: filteredUsers })
+        } catch {
+            res.status(500).send()
+        }
+    } else {
+        res.status(403).send()
+    }
+
+}
+
 export const validateFamilleAccueil = (req: Request, res: Response) => {
 
     if ((req as CustomRequest).user.isSuperAdmin) {
@@ -121,22 +138,22 @@ export const getAnimals = (req: Request, res: Response) => {
 }
 export const getInactiveFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
-        FamAccueil.find({ actif: false }).then((data) => {
-            if (data) {
-                res.status(200).send({
-                    status: 200,
-                    familles: data
-                })
-            } else {
-                res.status(500).send({
-                    status: 500
-                })
-            }
-        }).catch((err) => {
-            res.status(500).send({
-                status: 500
-            })
+        User.find({}).populate({
+            path: 'famAccueil',
+            match: { actif: false }
         })
+            .then(users => {
+                const filteredUsers = users.filter((user) => user.famAccueil !== null);
+                res.status(200).send({
+                    demandes: filteredUsers
+                })
+            })
+            .catch(err => {
+                res.status(500).send({
+
+                })
+            });
+
     } else {
         res.status(403).send({
             status: 403

@@ -14,7 +14,7 @@ router.get("/ids", getAllAnimalsID)
 router.get("/:id", getAnimal);
 router.get("/animal-contact/:id", getAnimalContact);
 router.delete("/:id", verifyToken, deleteAnimal);
-router.put("/:id", verifyToken, updateAnimal);
+// router.put("/:id", verifyToken, upload.fields([{ name: 'images' }]), updateAnimal);
 router.put("/validate/:id", verifyToken, validateAnimal)
 router.put("/unvalidate/:id", verifyToken, unvalidateAnimal)
 

@@ -125,7 +125,9 @@ export const createAnimal = async (req: Request, res: Response) => {
         })
     }
 }
+export const updateAnimal = async (req: Request, res: Response) => {
 
+}
 export const getAllAnimalsValidated = async (req: Request, res: Response) => {
 
     if (Object.keys(req.query).length > 0) {
@@ -286,47 +288,6 @@ export const deleteAnimal = async (req: Request, res: Response) => {
     }
 }
 
-export const updateAnimal = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isAdmin) {
-        const exist = await Animal.exists({ _id: req.params.id })
-        const date = new Date(req.body.birthdate);
-        const ageDifMs = Date.now() - date.getTime();
-        const ageDate = new Date(ageDifMs);
-        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-
-        if (exist) {
-            try {
-                await Animal.findByIdAndUpdate(req.params.id, {
-                    nom: req.body.nom,
-                    age: age,
-                    espece: req.body.espece,
-                    race: req.body.race,
-                    sexe: req.body.sexe,
-                    entente: req.body.entente,
-                    caractere: req.body.caractere,
-                    typeAdoption: req.body.adoption,
-                    taille: req.body.taille,
-                    birthdate: req.body.birthdate
-                }, { new: true, omitUndefined: true })
-                    .then((data) => {
-                        res.status(200).send({
-                            status: 200
-                        })
-                    })
-            } catch (error) {
-                res.status(500).send({ status: 500 })
-            }
-        } else {
-            res.status(500).send({
-                status: 500
-            })
-        }
-    } else {
-        res.status(403).send({
-            status: 403
-        })
-    }
-}
 
 export const unvalidateAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
