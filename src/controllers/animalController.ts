@@ -157,7 +157,22 @@ export const getAllAnimalsValidated = async (req: Request, res: Response) => {
     }
 
 }
+export const getAllAnimalsID = async (req: Request, res: Response) => {
+    Animal.find({}, { _id: 1 }).then((data) => {
 
+        if (data) {
+            res.status(200).send({
+                status: 200,
+                animals: data
+            })
+        } else {
+            res.status(500).send({
+                status: 500,
+                animals: data
+            })
+        }
+    })
+}
 export const getAllAnimals = async (req: Request, res: Response) => {
 
     Animal.find({}).then((data) => {

@@ -143,11 +143,13 @@ export const resetPassword = async (req: Request, res: Response) => {
         });
 };
 export const updateResetPassword = async (req: Request, res: Response) => {
-    const token = req.headers["authorization"]
+    const id = (req as CustomRequest).user.id
+    console.log(req.body);
     if (req.body.password) {
+
         const hasedPassword = bcrypt.hashSync(req.body.password, 10);
         try {
-            await User.findOneAndUpdate({ resetToken: token },
+            await User.findByIdAndUpdate(id,
                 { password: hasedPassword, resetToken: '' },
                 {
                     new: true,
@@ -198,6 +200,19 @@ export const verifyAdmin = async (req: Request, res: Response) => {
             status: 403,
             isSuperAdmin: false
         })
+    }
+};
+export const verifyResetToken = async (req: Request, res: Response) => {
+    const id = (req as CustomRequest).user.id
+    try {
+        const user = await User.findById(id)
+        if (user?.resetToken === req.headers['authorization']) {
+            res.status(200).send({ status: 200 })
+        } else {
+            res.status(500).send({ status: 500 })
+        }
+    } catch (error) {
+        res.status(500).send({ status: 500 })
     }
 };
 
