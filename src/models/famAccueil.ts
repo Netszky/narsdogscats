@@ -1,5 +1,5 @@
 // AGE RACE SEXE CARACTERE ENTENTE TYPE DADOPTION TAILLE
-import { Schema, model, ObjectId } from 'mongoose';
+import mongoose, { Schema, model, ObjectId } from 'mongoose';
 import { IAnimal } from './animalModel';
 export interface IFamAccueil {
     _id: ObjectId,
@@ -26,6 +26,19 @@ const FamAccueilSchema = new Schema<IFamAccueil>({
     animals: [{ type: Schema.Types.ObjectId, ref: 'Animal', required: false },]
 });
 
+FamAccueilSchema.pre('findOneAndDelete', async function (next) {
+
+    const famAccueilId = this.getQuery()["_id"];
+    const famAccueil = await this.model.findById(famAccueilId) as IFamAccueil
+
+    const Animal = mongoose.model('Animal');
+
+    await Animal.deleteMany({ _id: { $in: famAccueil.animals } });
+
+    next();
+});
+
 const FamAccueil = model<IFamAccueil>('FamAccueil', FamAccueilSchema);
+
 
 export default FamAccueil;

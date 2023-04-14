@@ -53,15 +53,15 @@ export const getAllFamilleAccueil = async (req: Request, res: Response) => {
 
 }
 
-export const validateFamilleAccueil = (req: Request, res: Response) => {
-
+export const validateFamille = (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         FamAccueil.findByIdAndUpdate(req.params.id, {
-            actif: req.body.actif
-        }, { omitUndefined: true }).then((data) => {
-            User.findOne({ famAccueil: req.params.id }).then((user) => {
-                if (req.body.actif) {
-
+            $set: {
+                actif: true
+            }
+        }, { omitUndefined: true })
+            .then((data) => {
+                User.findOneAndUpdate({ famAccueil: req.params.id }, { isAdmin: true }, { omitUndefined: true, new: true }).then((user) => {
                     mailjet
                         .post("send", { 'version': 'v3.1' })
                         .request({
@@ -76,11 +76,11 @@ export const validateFamilleAccueil = (req: Request, res: Response) => {
                                             "Email": user?.email,
                                         }
                                     ],
-                                    "TemplateID": 4707712,
+                                    "TemplateID": 4733581,
                                     "TemplateLanguage": true,
                                     "Subject": "Demande Famille Accueil Validée !",
                                     "Variables": {
-                                        "name": user?.firstname
+                                        "nom": user?.firstname
                                     }
                                 }
                             ]
@@ -93,18 +93,13 @@ export const validateFamilleAccueil = (req: Request, res: Response) => {
                                 status: 500
                             })
                         })
-                } else {
-                    console.log("no mail");
 
-                }
+                })
+            }).catch((err) => {
+                res.status(500).send({
+                    status: 500
+                })
             })
-
-
-        }).catch((err) => {
-            res.status(500).send({
-                status: 500
-            })
-        })
     } else {
         res.status(403).send({
             status: 403
@@ -112,6 +107,70 @@ export const validateFamilleAccueil = (req: Request, res: Response) => {
     }
 
 }
+
+export const deactivateFamille = (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        FamAccueil.findByIdAndUpdate(req.params.id, {
+            $set: {
+                actif: false
+            }
+        }, { omitUndefined: true }).then((data) => {
+            User.findOneAndUpdate({ famAccueil: data?._id }, { isAdmin: false }, { omitUndefined: true })
+                .then((user) => {
+                    res.status(200).send()
+                })
+                .catch((err) => {
+                    res.status(500).send()
+                })
+        })
+
+    } else {
+        res.status(403).send({
+
+        })
+    }
+}
+
+export const deleteFamille = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        const exist = await FamAccueil.exists({ _id: req.params.id })
+        if (exist) {
+
+            try {
+                await FamAccueil.findOneAndDelete({ _id: req.params.id }).then((data) => {
+                    res.status(200).send({
+                    })
+                })
+            } catch (error) {
+                res.status(500).send({
+                })
+            }
+        } else {
+            res.status(500).send({
+            })
+        }
+    } else {
+        res.status(403).send({
+        })
+    }
+}
+
+export const updateFamille = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        FamAccueil.findByIdAndUpdate(req.params.id, {
+            ...req.body.famille
+        }, { omitUndefined: true })
+            .then((data) => {
+                res.status(200).send()
+            })
+            .catch((err) => {
+                res.status(500)
+            })
+    } else {
+        res.status(403).send()
+    }
+}
+
 export const getAnimals = (req: Request, res: Response) => {
     const id = (req as CustomRequest).user.fam
 
