@@ -114,11 +114,11 @@ export const resetPassword = async (req: Request, res: Response) => {
                                             "Email": data?.email,
                                         }
                                     ],
-                                    "TemplateID": 4711617,
+                                    "TemplateID": 4744170,
                                     "TemplateLanguage": true,
                                     "Subject": "Demande de reinitialisation de mot de passe",
                                     "Variables": {
-                                        "nom": data?.firstname,
+                                        "name": data?.firstname,
                                         "url": `http://localhost:3000/reset-password?token=${data?.resetToken}`
                                     }
                                 }
