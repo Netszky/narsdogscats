@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { CustomRequest } from '~/middlewares/verifyToken';
 import Animal from '~/models/animalModel';
 import Contact from '~/models/contactModel';
+import { mailjet } from '~/services/express';
 
 
 export const createContact = async (req: Request, res: Response) => {
@@ -18,9 +19,28 @@ export const createContact = async (req: Request, res: Response) => {
     });
     await contact.save()
         .then((data) => {
-            res.status(201).send({
-                status: 201
-            })
+            // mailjet.post("send", { 'version': 'v3.1' })
+            //     .request({
+            //         "Messages": [
+            //             {
+            //                 "From": {
+            //                     "Email": "lesanimauxdu27.web@gmail.com",
+            //                     "Name": "Les Animaux du 27"
+            //                 },
+            //                 "To": [
+            //                     {
+            //                         "Email": data?.email,
+            //                     }
+            //                 ],
+            //                 "TemplateID": 4744170,
+            //                 "TemplateLanguage": true,
+            //                 "Subject": "Demande de reinitialisation de mot de passe",
+            //                 "Variables": {
+            //                     "url": `http://localhost:3000/reset-password?token=${data?.resetToken}`
+            //                 }
+            //             }
+            //         ]
+            //     })
         }).catch((err) => {
             res.status(500).send({
                 status: 500
@@ -73,39 +93,38 @@ export const createContactAnimal = async (req: Request, res: Response) => {
         })
 }
 export const getAllContact = async (req: Request, res: Response) => {
-    if (req.body.animal) {
-        try {
-            await Contact.find({ animal: req.body.animal }).then((data) => {
-                res.status(200).send({
-                    message: "OK",
-                    contact: data,
+    try {
+        await Contact.find().then((data) => {
+            res.status(200).send({
+                contact: data,
 
-                })
             })
-        }
-        catch (error) {
-            res.status(404).send({
-                message: "Aucun Contact trouvé"
-            })
-
-        }
-    } else {
-        try {
-            await Contact.find().then((data) => {
-                res.status(200).send({
-                    message: "OK",
-                    contact: data,
-
-                })
-            })
-        }
-        catch (error) {
-            res.status(404).send({
-                message: "Aucun Contact trouvé"
-            })
-
-        }
+        })
     }
+    catch (error) {
+        res.status(404).send({
+        })
+
+    }
+
+}
+
+export const getActiveContact = async (req: Request, res: Response) => {
+    try {
+        await Contact.find({ closed: false }).then((data) => {
+            res.status(200).send({
+                contact: data,
+
+            })
+        })
+    }
+    catch (error) {
+        res.status(404).send({
+            message: "Aucun Contact trouvé"
+        })
+
+    }
+
 }
 
 
@@ -151,40 +170,3 @@ export const deleteContact = async (req: Request, res: Response) => {
         })
     }
 }
-
-export const updateContact = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isAdmin) {
-        const { nom, url, telephone, mail, image, date, localisation } = req.body
-        const exist = await Contact.exists({ _id: req.params.id })
-        if (exist) {
-            try {
-                await Contact.findByIdAndUpdate(req.params.id, {
-                    nom: nom,
-                    url: url,
-                    telephone: telephone,
-                    mail: mail,
-                    image: image,
-                    date: date,
-                    loacalisation: localisation
-                }, { new: true, omitUndefined: true })
-                    .then((data) => {
-                        res.status(200).send({
-                            message: "Evenement Update",
-                            contact: data
-                        })
-                    })
-            } catch (error) {
-                res.status(500).send({ status: "NOK" })
-            }
-        } else {
-            res.status(404).send({
-                message: "Aucun evenement trouvé"
-            })
-        }
-    } else {
-        res.status(401).send({
-            message: "Not admin"
-        })
-    }
-}
-

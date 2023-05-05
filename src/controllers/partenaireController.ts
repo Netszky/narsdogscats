@@ -2,10 +2,7 @@ import { Request, Response } from 'express';
 import { CustomRequest } from '~/middlewares/verifyToken';
 import Partenaire from '~/models/partenaireModel';
 
-
-
 export const createPartenaire = async (req: Request, res: Response) => {
-    console.log(req);
     if ((req as CustomRequest).user.isAdmin) {
 
         const { nom, url, telephone, mail, logo } = req.body

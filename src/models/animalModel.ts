@@ -1,5 +1,5 @@
-import { Schema, model, Types } from 'mongoose';
-
+import mongoose, { Schema, model, ObjectId, Types } from 'mongoose';
+import { IFamAccueil } from './famAccueil';
 export interface IAnimal {
     _id: Types.ObjectId,
     nom: string,
@@ -49,6 +49,21 @@ const AnimalSchema = new Schema<IAnimal>({
     }],
     validated: { type: Boolean, required: false, default: false }
 }, { timestamps: true });
+
+AnimalSchema.pre('findOneAndDelete', async function (next) {
+    const animalId = this.getQuery()["_id"];
+
+    const FamAccueil = mongoose.model('FamAccueil');
+
+    // Mettre à jour la famille d'accueil en retirant l'animalID du tableau 'animals'
+    await FamAccueil.findOneAndUpdate(
+        { animals: animalId }, // Trouver la famille d'accueil qui contient l'animalID dans le tableau 'animals'
+        { $pull: { animals: animalId } }, // Retirer l'animalID du tableau 'animals'
+        { omitUndefined: true } // Option pour retourner le document modifié
+    );
+
+    next();
+});
 
 const Animal = model<IAnimal>('Animal', AnimalSchema);
 export default Animal;

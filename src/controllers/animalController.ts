@@ -7,6 +7,7 @@ import cloudinary from 'cloudinary';
 import streamifier from 'streamifier';
 import { deleteImageFromCloudinary, getPublicIdFromUrl } from '~/utils/cloudinary';
 import FamAccueil from '~/models/famAccueil';
+import { mailjet } from '~/services/express';
 interface UploadResult {
     url: string;
 }
@@ -14,7 +15,6 @@ interface UploadResult {
 export const createAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
         const idFamily = (req as CustomRequest).user.fam
-
         if (!('images' in req.files!)) {
             return res.status(400).send("Missing 'images' field");
         }
@@ -83,12 +83,43 @@ export const createAnimal = async (req: Request, res: Response) => {
                             $push: {
                                 animals: animal._id
                             }
-                        }, { omitUndefined: true })
+                        }, { omitUndefined: true, new: true })
                             .then((update) => {
-                                res.status(201).send({
-                                    status: 201
-                                })
+                                mailjet.post("send", { 'version': 'v3.1' })
+                                    .request({
+                                        "Messages": [
+                                            {
+                                                "From": {
+                                                    "Email": "lesanimauxdu27.web@gmail.com",
+                                                    "Name": "Les Animaux du 27"
+                                                },
+                                                "To": [
+                                                    {
+                                                        "Email": "chigotjulien@gmail.com"
+                                                    }
+                                                ],
+                                                "TemplateID": 4726819,
+                                                "TemplateLanguage": true,
+                                                "Subject": "Nouvel Animal Créé",
+                                                "Variables": {
+                                                    "email": update?.email,
+                                                    "url": `${process.env.FRONT_URL}admin/animaux`
+                                                }
+                                            }
+                                        ]
+                                    })
+                                    .then((mail) => {
+                                        console.log(mail);
+
+                                        res.status(201).send({})
+                                    })
+                                    .catch((err) => {
+                                        console.log(err);
+
+                                        res.status(500).send({})
+                                    })
                             }).catch((err) => {
+
                                 res.status(500).send({
                                     status: 500
                                 })
@@ -247,7 +278,7 @@ export const deleteAnimal = async (req: Request, res: Response) => {
         const exist = await Animal.exists({ _id: req.params.id })
         if (exist) {
             try {
-                await Animal.findByIdAndDelete(req.params.id).then((data) => {
+                await Animal.findOneAndDelete({ _id: req.params.id }).then((data) => {
                     if (data?.image) {
                         const deletePromises = data?.image?.map((url) => {
                             return new Promise<void>((resolve, reject) => {

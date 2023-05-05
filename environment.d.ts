@@ -9,7 +9,8 @@ declare global {
       CLOUDINARY_API: string,
       CLOUDNAME: string,
       MAILJET_API: string,
-      MAILJET_SECRET: string
+      MAILJET_SECRET: string,
+      FRONT_URL: string
     }
   }
 }

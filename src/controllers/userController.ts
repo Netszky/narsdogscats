@@ -119,7 +119,7 @@ export const resetPassword = async (req: Request, res: Response) => {
                                     "Subject": "Demande de reinitialisation de mot de passe",
                                     "Variables": {
                                         "name": data?.firstname,
-                                        "url": `http://localhost:3000/reset-password?token=${data?.resetToken}`
+                                        "url": `${process.env.FRONT_URL}reset-password?token=${data?.resetToken}`
                                     }
                                 }
                             ]
