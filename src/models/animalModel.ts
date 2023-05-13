@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, ObjectId, Types } from 'mongoose';
+import mongoose, { Schema, model, Types } from 'mongoose';
 import { IFamAccueil } from './famAccueil';
 export interface IAnimal {
     _id: Types.ObjectId,
@@ -12,7 +12,7 @@ export interface IAnimal {
     typeAdoption: string,
     taille: string,
     birthdate: Date,
-    contact: Types.ObjectId,
+    contact: Types.ObjectId[],
     image: string[],
     validated: boolean
 }
@@ -42,7 +42,7 @@ const AnimalSchema = new Schema<IAnimal>({
     },
     taille: { type: String, required: false, enum: ["petit", "moyen", "grand"] },
     birthdate: { type: Date, required: false },
-    contact: [{ type: Schema.Types.ObjectId, ref: "Contact" }],
+    contact: [{ type: Schema.Types.ObjectId, ref: "ContactAnimal" }],
     image: [{
         type: String,
         required: false
