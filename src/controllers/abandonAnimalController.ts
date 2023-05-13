@@ -35,7 +35,6 @@ export const createAbandon = async (req: Request, res: Response) => {
                             "TemplateLanguage": true,
                             "Subject": "Abandon Animal",
                             "Variables": {
-                                "url": `http://localhost:3000/reset-password?token=${data?.resetToken}`
                             }
                         }
                     ]
@@ -74,20 +73,14 @@ export const getAllAbandon = async (req: Request, res: Response) => {
 
 export const deleteAbandon = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
-        const exist = await AbandonAnimal.exists({ _id: req.params.id })
-        if (exist) {
-            try {
-                await AbandonAnimal.findByIdAndDelete(req.params.id).then((data) => {
+        try {
+            await AbandonAnimal.findByIdAndUpdate(req.params.id, { closed: true }, { omitUndefined: true })
+                .then((data) => {
                     res.status(200).send({
                         message: "Entree Supprimée ",
                     })
                 })
-            } catch (error) {
-                res.status(404).send({
-                    message: "Aucun evenement trouvé"
-                })
-            }
-        } else {
+        } catch (error) {
             res.status(404).send({
                 message: "Aucun evenement trouvé"
             })

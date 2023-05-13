@@ -19,39 +19,41 @@ export const createContactAnimal = async (req: Request, res: Response) => {
         });
 
         const data = await contact.save();
-        await Animal.findByIdAndUpdate(animalId, {
+        const animalUpdated = await Animal.findByIdAndUpdate(animalId, {
             $push: {
                 contact: data._id
             }
-        });
-        const famAccueil: IFamAccueil = await FamAccueil.find({ animals: animalId })
-
-        mailjet.post("send", { 'version': 'v3.1' })
-            .request({
-                "Messages": [
-                    {
-                        "From": {
-                            "Email": "lesanimauxdu27.web@gmail.com",
-                            "Name": "Les Animaux du 27"
-                        },
-                        "To": [
-                            {
-                                "Email": famAccueil.email
+        }, { new: true, omitUndefined: true });
+        const famAccueil = await FamAccueil.findOne({ animals: animalId })
+        if (famAccueil) {
+            mailjet.post("send", { 'version': 'v3.1' })
+                .request({
+                    "Messages": [
+                        {
+                            "From": {
+                                "Email": "lesanimauxdu27.web@gmail.com",
+                                "Name": "Les Animaux du 27"
+                            },
+                            "To": [
+                                {
+                                    "Email": famAccueil.email
+                                }
+                            ],
+                            "TemplateID": 4744170,
+                            "TemplateLanguage": true,
+                            "Subject": `Nouvelle demande de contact pour ${animalUpdated?.nom}`,
+                            "Variables": {
                             }
-                        ],
-                        "TemplateID": 4744170,
-                        "TemplateLanguage": true,
-                        "Subject": `Nouvelle demande de contact pour ${animal}`,
-                        "Variables": {
                         }
-                    }
-                ]
-            }).then((mail) => {
-                res.status(201).send()
-            }).catch((err) => {
-                res.status(500).send()
-            })
-        res.status(201).send()
+                    ]
+                }).then((mail) => {
+                    res.status(201).send()
+                }).catch((err) => {
+                    res.status(500).send()
+                })
+            res.status(201).send()
+        }
+
     } catch (err) {
         res.status(500).send({
             status: 500
@@ -88,31 +90,3 @@ export const deleteAnimalContact = async (req: Request, res: Response) => {
         })
     }
 }
-
-
-mailjet.post("send", { 'version': 'v3.1' })
-    .request({
-        "Messages": [
-            {
-                "From": {
-                    "Email": "lesanimauxdu27.web@gmail.com",
-                    "Name": "Les Animaux du 27"
-                },
-                "To": [
-                    {
-                        "Email": "lesanimauxdu27.web@gmail.com"
-                    }
-                ],
-                "TemplateID": 4744170,
-                "TemplateLanguage": true,
-                "Subject": `Nouvelle demande de contact pour ${animal}`,
-                "Variables": {
-                    "url": `http://localhost:3000/reset-password?token=${data?.resetToken}`
-                }
-            }
-        ]
-    }).then((mail) => {
-        res.status(201).send()
-    }).catch((err) => {
-        res.status(500).send()
-    })
