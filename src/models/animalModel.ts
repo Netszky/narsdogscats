@@ -1,5 +1,5 @@
 import mongoose, { Schema, model, Types } from 'mongoose';
-import { IFamAccueil } from './famAccueil';
+
 export interface IAnimal {
     _id: Types.ObjectId,
     nom: string,

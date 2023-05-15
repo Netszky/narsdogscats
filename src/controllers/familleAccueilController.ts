@@ -19,6 +19,33 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
             actif: false
         });
         await famille.save()
+        mailjet.post("send", { 'version': 'v3.1' })
+            .request({
+                "Messages": [
+                    {
+                        "From": {
+                            "Email": "lesanimauxdu27.web@gmail.com",
+                            "Name": "Les Animaux du 27"
+                        },
+                        "To": [
+                            {
+                                "Email": "lesanimauxdu27.web@gmail.com"
+                            }
+                        ],
+                        "TemplateID": 4805652,
+                        "TemplateLanguage": true,
+                        "Subject": "Nouvelle demande de famille d'accueil",
+                        "Variables": {
+                            "telephone": telephone,
+                            "email": email,
+                            "adresse": adresse,
+                            "capaciteChien": capaciteChien,
+                            "capaciteChat": capaciteChat,
+                            "url": ""
+                        }
+                    }
+                ]
+            })
         res.status(201).send()
     } catch {
         res.status(500).send()

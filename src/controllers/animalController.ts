@@ -8,6 +8,7 @@ import streamifier from 'streamifier';
 import { deleteImageFromCloudinary, getPublicIdFromUrl } from '~/utils/cloudinary';
 import FamAccueil from '~/models/famAccueil';
 import { mailjet } from '~/services/express';
+
 interface UploadResult {
     url: string;
 }
@@ -95,22 +96,24 @@ export const createAnimal = async (req: Request, res: Response) => {
                                                 },
                                                 "To": [
                                                     {
-                                                        "Email": "chigotjulien@gmail.com"
+                                                        "Email": "lesanimauxdu27.web@gmail.com"
                                                     }
                                                 ],
-                                                "TemplateID": 4726819,
+                                                "TemplateID": 4745777,
                                                 "TemplateLanguage": true,
-                                                "Subject": "Nouvel Animal Créé",
+                                                "Subject": "Validation Animal en attente !",
                                                 "Variables": {
-                                                    "email": update?.email,
-                                                    "url": `${process.env.FRONT_URL}admin/animaux`
+                                                    "nom": data.nom,
+                                                    "Espece": data.espece,
+                                                    "Age": data.age,
+                                                    "Race": data.race,
+                                                    "TypeA": data.typeAdoption,
+                                                    "url": `${process.env.FRONT_URL}admin/animal/${animal._id}`
                                                 }
                                             }
                                         ]
                                     })
                                     .then((mail) => {
-                                        console.log(mail);
-
                                         res.status(201).send({})
                                     })
                                     .catch((err) => {

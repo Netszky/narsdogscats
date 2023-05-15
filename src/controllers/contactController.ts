@@ -31,10 +31,16 @@ export const createContact = async (req: Request, res: Response) => {
                                     "Email": "lesanimauxdu27.web@gmail.com",
                                 }
                             ],
-                            "TemplateID": 4744170,
+                            "TemplateID": 4805639,
                             "TemplateLanguage": true,
-                            "Subject": "Demande de reinitialisation de mot de passe",
+                            "Subject": "Nouvelle demande de contact",
                             "Variables": {
+                                "type": type,
+                                "telephone": telephone,
+                                "email": email,
+                                "content": content,
+                                "nom": nom,
+                                "prenom": prenom
                             }
                         }
                     ]
