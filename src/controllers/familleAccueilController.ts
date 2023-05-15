@@ -7,46 +7,52 @@ import { mailjet } from '~/services/express';
 
 export const createFamilleAccueil = async (req: Request, res: Response) => {
     try {
-        const { adresse, telephone, email, currentChat, capaciteChat, currentChien, capaciteChien } = req.body
-        const famille = new FamAccueil({
-            telephone: telephone,
-            email: email,
-            adresse: adresse,
-            capaciteChien: capaciteChien,
-            capaciteChat: capaciteChat,
-            capaciteActuelleChien: currentChien,
-            capaciteActuelleChat: currentChat,
-            actif: false
-        });
-        await famille.save()
-        mailjet.post("send", { 'version': 'v3.1' })
-            .request({
-                "Messages": [
-                    {
-                        "From": {
-                            "Email": "lesanimauxdu27.web@gmail.com",
-                            "Name": "Les Animaux du 27"
-                        },
-                        "To": [
-                            {
-                                "Email": "lesanimauxdu27.web@gmail.com"
+        const info = req as CustomRequest
+        const user = await User.findById(info.user.id)
+        if (user) {
+            const { adresse, telephone, capaciteChat, capaciteChien, showPhone } = req.body
+            const famille = new FamAccueil({
+                telephone: telephone,
+                email: user.email,
+                adresse: adresse,
+                capaciteChien: capaciteChien,
+                capaciteChat: capaciteChat,
+                showPhone: showPhone,
+                actif: false,
+                user: user._id
+            });
+            await famille.save()
+            // TODO -> "FAIRE LE MAIL"
+            mailjet.post("send", { 'version': 'v3.1' })
+                .request({
+                    "Messages": [
+                        {
+                            "From": {
+                                "Email": "lesanimauxdu27.web@gmail.com",
+                                "Name": "Les Animaux du 27"
+                            },
+                            "To": [
+                                {
+                                    "Email": "chigotjulien@gmail.com"
+                                }
+                            ],
+                            "TemplateID": 4805652,
+                            "TemplateLanguage": true,
+                            "Subject": "Nouvelle demande de famille d'accueil",
+                            "Variables": {
+                                "telephone": telephone,
+                                "email": user.email,
+                                "adresse": adresse,
+                                "capaciteChien": capaciteChien,
+                                "capaciteChat": capaciteChat,
+                                "url": ""
                             }
-                        ],
-                        "TemplateID": 4805652,
-                        "TemplateLanguage": true,
-                        "Subject": "Nouvelle demande de famille d'accueil",
-                        "Variables": {
-                            "telephone": telephone,
-                            "email": email,
-                            "adresse": adresse,
-                            "capaciteChien": capaciteChien,
-                            "capaciteChat": capaciteChat,
-                            "url": ""
                         }
-                    }
-                ]
-            })
-        res.status(201).send()
+                    ]
+                })
+            res.status(201).send()
+        }
+
     } catch {
         res.status(500).send()
     }
@@ -56,11 +62,8 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
 export const getAllFamilleAccueil = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         try {
-            const familles = await User.find({}).populate({
-                path: 'famAccueil',
-            })
-            const filteredUsers = familles.filter((user) => user.famAccueil !== null);
-            res.status(200).send({ familles: filteredUsers })
+            const familles = await FamAccueil.find({}).populate('user')
+            res.status(200).send({ familles: familles })
         } catch {
             res.status(500).send()
         }
@@ -173,8 +176,8 @@ export const deleteFamille = async (req: Request, res: Response) => {
 }
 
 export const updateFamille = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isSuperAdmin) {
-        FamAccueil.findByIdAndUpdate(req.params.id, {
+    if ((req as CustomRequest).user.isAdmin) {
+        FamAccueil.findByIdAndUpdate((req as CustomRequest).user.fam, {
             ...req.body.famille
         }, { omitUndefined: true })
             .then((data) => {
@@ -214,28 +217,94 @@ export const getAnimals = (req: Request, res: Response) => {
 }
 export const getInactiveFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
-        User.find({}).populate({
-            path: 'famAccueil',
-            match: { actif: false }
-        })
-            .then(users => {
-                const filteredUsers = users.filter((user) => user.famAccueil !== null);
-                res.status(200).send({
-                    demandes: filteredUsers
-                })
-            })
-            .catch(err => {
-                res.status(500).send({
-
-                })
-            });
-
+        const inactiveFamille = await FamAccueil.find({ actif: false })
+        if (inactiveFamille.length === 0) {
+            res.status(500).send()
+        } else {
+            res.status(200).send({ inactiveFamille: inactiveFamille })
+        }
     } else {
         res.status(403).send({
             status: 403
         })
     }
+}
 
+export const findFamilleStatus = async (req: Request, res: Response) => {
+    try {
+        const info = req as CustomRequest
+        const inactiveFamille = await FamAccueil.findOne({ user: info.user.id })
+        if (inactiveFamille !== null) {
+            if (inactiveFamille?.actif) {
+                res.status(200).send({
+                    status: "CA"
+                })
+            } else {
+                console.log(inactiveFamille);
+                res.status(200).send({
+                    status: "CU"
+                })
+            }
+        } else {
+            res.status(200).send({
+                status: "NA"
+            })
+        }
+    } catch (error) {
+        res.status(500).send({
+            status: "NA"
+        })
+    }
 
 }
+
+export const getFamillesCapacity = async (req: Request, res: Response) => {
+    try {
+        let capChat: number = 0
+        let capActuelleChat: number = 0
+        let capChien: number = 0
+        let capActuelleChien: number = 0
+        const familles = await FamAccueil.find({ actif: true })
+
+        let canReceiveChat: boolean = false
+        let canReceiveChien: boolean = false
+        for (const element of familles) {
+            capChat += element.capaciteChat
+            capChien += element.capaciteChien
+            capActuelleChien += element.capaciteActuelleChien
+            capActuelleChat += element.capaciteActuelleChat
+        }
+        if (capActuelleChat < capChat) {
+            canReceiveChat = true
+        }
+        if (capActuelleChien < capChien) {
+            canReceiveChien = true
+        }
+        res.status(200).send({ canReceiveChien: canReceiveChien, canReceiveChat: canReceiveChat })
+
+    } catch {
+        res.status(500).send({})
+    }
+
+}
+export const verifyFamille = async (req: Request, res: Response) => {
+    try {
+
+        const id = (req as CustomRequest).user.id
+        const famille = await FamAccueil.findOne({ user: id }).populate('user')
+        res.status(200).send({
+            status: 200,
+            isAdmin: famille?.user.isAdmin,
+            actif: famille?.actif,
+        })
+    } catch {
+        res.status(500).send({
+            status: 500,
+            isAdmin: false,
+            actif: false
+        })
+    }
+}
+
+
 

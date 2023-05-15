@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IFamAccueil } from "./famAccueil";
+
 
 export interface IUser {
     lastname: string,
@@ -9,7 +9,6 @@ export interface IUser {
     isAdmin: boolean,
     isSuperAdmin: boolean,
     resetToken: string,
-    famAccueil: IFamAccueil
 }
 
 const userSchema = new Schema<IUser>({
@@ -20,7 +19,6 @@ const userSchema = new Schema<IUser>({
     isAdmin: { type: Boolean, requred: true, default: false },
     isSuperAdmin: { type: Boolean, requred: true, default: false },
     resetToken: { type: String, required: false },
-    famAccueil: { type: Schema.Types.ObjectId, ref: "FamAccueil", required: false, default: null }
 });
 
 const User = model<IUser>('User', userSchema);
