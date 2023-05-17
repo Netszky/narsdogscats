@@ -5,54 +5,50 @@ import { mailjet } from '~/services/express';
 
 
 export const createAbandon = async (req: Request, res: Response) => {
+    console.log("here");
 
-    const { race, telephone, email, content, nom, prenom } = req.body
+    try {
+        const { race, telephone, email, content, nom, prenom, espece, age } = req.body
 
-    const contact = new AbandonAnimal({
-        race: race,
-        telephone: telephone,
-        email: email,
-        content: content,
-        nom: nom,
-        prenom: prenom
-    });
-    await contact.save()
-        .then((data) => {
-            mailjet.post("send", { 'version': 'v3.1' })
-                .request({
-                    "Messages": [
-                        {
-                            "From": {
-                                "Email": "lesanimauxdu27.web@gmail.com",
-                                "Name": "Les Animaux du 27"
-                            },
-                            "To": [
-                                {
-                                    "Email": "lesanimauxdu27.web@gmail.com"
-                                }
-                            ],
-                            "TemplateID": 4744170,
-                            "TemplateLanguage": true,
-                            "Subject": "Abandon Animal",
-                            "Variables": {
+        const contact = new AbandonAnimal({
+            espece: espece,
+            race: race,
+            telephone: telephone,
+            email: email,
+            content: content,
+            nom: nom,
+            prenom: prenom,
+            age: age
+        });
+        await contact.save()
+        mailjet.post("send", { 'version': 'v3.1' })
+            .request({
+                "Messages": [
+                    {
+                        "From": {
+                            "Email": "lesanimauxdu27.web@gmail.com",
+                            "Name": "Les Animaux du 27"
+                        },
+                        "To": [
+                            {
+                                "Email": "lesanimauxdu27.web@gmail.com"
                             }
+                        ],
+                        "TemplateID": 4744170,
+                        "TemplateLanguage": true,
+                        "Subject": "Abandon Animal",
+                        "Variables": {
                         }
-                    ]
-                }).then((mail) => {
-                    res.status(201).send()
-                }).catch((err) => {
-                    res.status(500).send()
-                })
-        }).catch((err) => {
-            res.status(500).send({
-                status: 500
+                    }
+                ]
+
             })
-        })
-        .catch((err) => {
-            res.status(500).send({
-                status: 500
-            })
-        })
+        res.status(201).send()
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).send()
+    }
 }
 
 
