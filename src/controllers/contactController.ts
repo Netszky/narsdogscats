@@ -45,7 +45,7 @@ export const createContact = async (req: Request, res: Response) => {
                         }
                     ]
                 }).then((result) => {
-                    res.status(200).send()
+                    res.status(201).send()
                 }).catch((err) => {
                     res.status(500).send()
                 });
@@ -63,9 +63,9 @@ export const createContact = async (req: Request, res: Response) => {
 }
 export const getAllContact = async (req: Request, res: Response) => {
     try {
-        await Contact.find().then((data) => {
+        await Contact.find().sort({ createdAt: -1 }).then((data) => {
             res.status(200).send({
-                contact: data,
+                contacts: data,
 
             })
         })
@@ -116,9 +116,9 @@ export const deleteContact = async (req: Request, res: Response) => {
         const exist = await Contact.exists({ _id: req.params.id })
         if (exist) {
             try {
-                await Contact.findByIdAndDelete(req.params.id).then((data) => {
+                await Contact.findByIdAndUpdate(req.params.id, { closed: true }, { omitUndefined: true }).then((data) => {
                     res.status(200).send({
-                        message: "Evenement Deleted",
+                        message: "Contact Closed",
                     })
                 })
             } catch (error) {

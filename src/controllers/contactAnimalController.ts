@@ -7,25 +7,28 @@ import { mailjet } from '~/services/express';
 
 
 export const createContactAnimal = async (req: Request, res: Response) => {
-    const { type, telephone, email, content, nom, prenom, animalId } = req.body;
-    try {
-        const contact = new ContactAnimal({
-            type: type,
-            telephone: telephone,
-            email: email,
-            content: content,
-            nom: nom,
-            prenom: prenom
-        });
 
-        const data = await contact.save();
-        const animalUpdated = await Animal.findByIdAndUpdate(animalId, {
-            $push: {
-                contact: data._id
-            }
-        }, { new: true, omitUndefined: true });
-        const famAccueil = await FamAccueil.findOne({ animals: animalId })
+    const { type, telephone, email, content, nom, prenom } = req.body;
+
+    try {
+        const famAccueil = await FamAccueil.findOne({ animals: req.params.id })
         if (famAccueil) {
+            const contact = new ContactAnimal({
+                type: type,
+                telephone: telephone,
+                email: email,
+                content: content,
+                nom: nom,
+                prenom: prenom
+            });
+
+            const data = await contact.save();
+            const animalUpdated = await Animal.findByIdAndUpdate(req.params.id, {
+                $push: {
+                    contact: data._id
+                }
+            }, { new: true, omitUndefined: true });
+
             mailjet.post("send", { 'version': 'v3.1' })
                 .request({
                     "Messages": [
@@ -46,14 +49,13 @@ export const createContactAnimal = async (req: Request, res: Response) => {
                             }
                         }
                     ]
-                }).then((mail) => {
-                    res.status(201).send()
-                }).catch((err) => {
-                    res.status(500).send()
                 })
             res.status(201).send()
+        } else {
+            res.status(500).send({
+                status: 500
+            });
         }
-
     } catch (err) {
         res.status(500).send({
             status: 500
