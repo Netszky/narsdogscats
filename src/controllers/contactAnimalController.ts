@@ -19,7 +19,8 @@ export const createContactAnimal = async (req: Request, res: Response) => {
                 email: email,
                 content: content,
                 nom: nom,
-                prenom: prenom
+                prenom: prenom,
+                famille: famAccueil._id
             });
 
             const data = await contact.save();
@@ -64,7 +65,7 @@ export const createContactAnimal = async (req: Request, res: Response) => {
 }
 
 export const deleteAnimalContact = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isSuperAdmin) {
+    if ((req as CustomRequest).user.isAdmin) {
         const exist = await ContactAnimal.exists({ _id: req.params.id })
         if (exist) {
             try {
@@ -83,6 +84,33 @@ export const deleteAnimalContact = async (req: Request, res: Response) => {
             }
         } else {
             res.status(404).send({
+                message: "Aucun evenement trouvé"
+            })
+        }
+    } else {
+        res.status(401).send({
+            message: "Not admin"
+        })
+    }
+}
+
+export const getAnimalContactByFamily = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isAdmin) {
+        const familleId = (req as CustomRequest).user.fam
+        const contacts = await ContactAnimal.find({ famille: familleId })
+        if (contacts.length > 0) {
+            try {
+                res.status(200).send({
+                    closed: contacts.filter((f) => f.closed === true),
+                    new: contacts.filter((f) => f.closed === false)
+                })
+            } catch (error) {
+                res.status(500).send({
+                    message: "Aucun evenement trouvé"
+                })
+            }
+        } else {
+            res.status(200).send({
                 message: "Aucun evenement trouvé"
             })
         }

@@ -129,7 +129,7 @@ export const createAnimal = async (req: Request, res: Response) => {
                             })
                     })
                     .catch((err) => {
-                        console.log(err);
+
                         const deletePromises = imagesUrls.map((url) => {
                             return new Promise<void>((resolve, reject) => {
                                 const publicId = getPublicIdFromUrl(url);
@@ -261,10 +261,9 @@ export const getAnimal = async (req: Request, res: Response) => {
         })
     }
 };
-export const getAnimalContact = async (req: Request, res: Response) => {
-
+export const getAnimalWithContact = async (req: Request, res: Response) => {
     try {
-        await Animal.findById(req.params.id).populate("contact")
+        await Animal.findById(req.params.id).populate('contact')
             .then((data) => res.status(200).send({
                 status: 200,
                 animal: data
@@ -275,6 +274,7 @@ export const getAnimalContact = async (req: Request, res: Response) => {
         })
     }
 };
+
 
 export const deleteAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {

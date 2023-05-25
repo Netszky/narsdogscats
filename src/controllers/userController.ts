@@ -65,7 +65,7 @@ export const register = async (req: Request, res: Response) => {
             let userToken = jwt.sign({
                 id: data._id,
                 isAdmin: data.isAdmin,
-
+                isSuperAdmin: data.isSuperAdmin,
             }, SECRET_JWT,
                 {
                     expiresIn: 80000

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createContactAnimal, deleteAnimalContact } from '~/controllers/contactAnimalController';
+import { createContactAnimal, deleteAnimalContact, getAnimalContactByFamily } from '~/controllers/contactAnimalController';
 import { verifyToken } from '~/middlewares/verifyToken';
 
 

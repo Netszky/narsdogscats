@@ -177,11 +177,17 @@ export const deleteFamille = async (req: Request, res: Response) => {
 
 export const updateFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
+        console.log(req.body);
+
         FamAccueil.findByIdAndUpdate((req as CustomRequest).user.fam, {
-            ...req.body.famille
-        }, { omitUndefined: true })
+            email: req.body.email,
+            telephone: req.body.telephone,
+            capaciteChien: req.body.capaciteChien,
+            capaciteChat: req.body.capaciteChat,
+        }, { omitUndefined: true, })
             .then((data) => {
-                res.status(200).send()
+                res.status(200).send({
+                })
             })
             .catch((err) => {
                 res.status(500)
@@ -191,30 +197,6 @@ export const updateFamille = async (req: Request, res: Response) => {
     }
 }
 
-export const getAnimals = (req: Request, res: Response) => {
-    const id = (req as CustomRequest).user.fam
-
-    FamAccueil.findById(id).populate({
-        path: 'animals', populate: {
-            path: 'contact',
-            match: { closed: false }
-        }
-    })
-        .then((data) => {
-            res.status(200).send({
-                status: 200,
-                animals: data?.animals
-            })
-        })
-        .catch((err) => {
-            console.log(err);
-
-            res.status(500).send({
-                status: 500,
-                animals: null
-            })
-        })
-}
 export const getInactiveFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         const inactiveFamille = await FamAccueil.find({ actif: false })
@@ -306,5 +288,29 @@ export const verifyFamille = async (req: Request, res: Response) => {
     }
 }
 
+export const getFamilleByID = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isAdmin) {
+        try {
+            const famille = await FamAccueil.findById((req as CustomRequest).user.fam).populate({
+                path: 'animals', populate: {
+                    path: 'contact',
+                    match: { closed: false }
+                }
+            })
+            if (famille) {
+                res.status(200).send({ famille: famille })
+            } else {
+                res.status(200).send({ famille: null })
+            }
+        } catch {
+            res.status(500).send({})
+        }
+
+    } else {
+        res.status(403).send({
+            status: 403
+        })
+    }
+}
 
 
