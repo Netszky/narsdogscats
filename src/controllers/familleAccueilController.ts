@@ -10,7 +10,7 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
         const info = req as CustomRequest
         const user = await User.findById(info.user.id)
         if (user) {
-            const { adresse, telephone, capaciteChat, capaciteChien, showPhone } = req.body
+            const { adresse, telephone, capaciteChat, capaciteChien, showPhone, nom } = req.body
             const famille = new FamAccueil({
                 telephone: telephone,
                 email: user.email,
@@ -19,6 +19,7 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
                 capaciteChat: capaciteChat,
                 showPhone: showPhone,
                 actif: false,
+                nom: nom,
                 user: user._id
             });
             await famille.save()
@@ -53,7 +54,9 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
             res.status(201).send()
         }
 
-    } catch {
+    } catch (error) {
+        console.log(error);
+
         res.status(500).send()
     }
 
@@ -155,11 +158,32 @@ export const deleteFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         const exist = await FamAccueil.exists({ _id: req.params.id })
         if (exist) {
-
+            // TODO : MAIL
             try {
                 await FamAccueil.findOneAndDelete({ _id: req.params.id }).then((data) => {
-                    res.status(200).send({
-                    })
+                    res.status(200).send({})
+                    mailjet.post("send", { 'version': 'v3.1' })
+                        .request({
+                            "Messages": [
+                                {
+                                    "From": {
+                                        "Email": "lesanimauxdu27.web@gmail.com",
+                                        "Name": "Les Animaux du 27"
+                                    },
+                                    "To": [
+                                        {
+                                            "Email": data?.email
+                                        }
+                                    ],
+                                    "TemplateID": 4805652,
+                                    "TemplateLanguage": true,
+                                    "Subject": "Votre demande a été refusée",
+                                    "Variables": {
+
+                                    }
+                                }
+                            ]
+                        })
                 })
             } catch (error) {
                 res.status(500).send({

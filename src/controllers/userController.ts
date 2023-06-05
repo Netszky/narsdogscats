@@ -14,7 +14,8 @@ export const login = async (req: Request, res: Response) => {
     await User.findOne({
         email: email
     }).then(async (data) => {
-        if (bcrypt.compareSync(req.body.password.toLowerCase(), data!.password)) {
+
+        if (bcrypt.compareSync(req.body.password, data!.password)) {
             const famille = await FamAccueil.findOne({ user: data?.id })
             let userToken = jwt.sign({
                 id: data!._id,
@@ -148,7 +149,6 @@ export const resetPassword = async (req: Request, res: Response) => {
 };
 export const updateResetPassword = async (req: Request, res: Response) => {
     const id = (req as CustomRequest).user.id
-    console.log(req.body);
     if (req.body.password) {
 
         const hasedPassword = bcrypt.hashSync(req.body.password, 10);
