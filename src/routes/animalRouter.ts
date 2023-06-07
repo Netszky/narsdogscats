@@ -1,11 +1,11 @@
-import * as express from 'express';
+import { Router } from 'express';
 import { createAnimal, deleteAnimal, getAllAnimals, getAllAnimalsID, getAllAnimalsValidated, getAnimal, getAnimalWithContact, getLatestAnimal, unvalidateAnimal, updateAnimal, validateAnimal } from '~/controllers/animalController';
 import { verifyToken } from '~/middlewares/verifyToken';
 import multer from 'multer';
 
 const upload = multer()
 
-const router = express.Router();
+const router = Router();
 router.post("/", verifyToken, upload.fields([{ name: 'images' }]), createAnimal)
 router.get("/", getAllAnimalsValidated);
 router.get("/animals", getAllAnimals)

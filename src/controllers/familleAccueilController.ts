@@ -23,7 +23,6 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
                 user: user._id
             });
             await famille.save()
-            // TODO -> "FAIRE LE MAIL"
             mailjet.post("send", { 'version': 'v3.1' })
                 .request({
                     "Messages": [
@@ -41,12 +40,7 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
                             "TemplateLanguage": true,
                             "Subject": "Nouvelle demande de famille d'accueil",
                             "Variables": {
-                                "telephone": telephone,
-                                "email": user.email,
-                                "adresse": adresse,
-                                "capaciteChien": capaciteChien,
-                                "capaciteChat": capaciteChat,
-                                "url": ""
+
                             }
                         }
                     ]
@@ -76,59 +70,52 @@ export const getAllFamilleAccueil = async (req: Request, res: Response) => {
 
 }
 
-export const validateFamille = (req: Request, res: Response) => {
+export const validateFamille = async (req: Request, res: Response) => {
+
     if ((req as CustomRequest).user.isSuperAdmin) {
-        FamAccueil.findByIdAndUpdate(req.params.id, {
-            $set: {
-                actif: true
-            }
-        }, { omitUndefined: true })
-            .then((data) => {
-                User.findOneAndUpdate({ famAccueil: req.params.id }, { isAdmin: true }, { omitUndefined: true, new: true }).then((user) => {
-                    mailjet
-                        .post("send", { 'version': 'v3.1' })
-                        .request({
-                            "Messages": [
-                                {
-                                    "From": {
-                                        "Email": "lesanimauxdu27.web@gmail.com",
-                                        "Name": "Les Animaux du 27"
-                                    },
-                                    "To": [
-                                        {
-                                            "Email": user?.email,
-                                        }
-                                    ],
-                                    "TemplateID": 4733581,
-                                    "TemplateLanguage": true,
-                                    "Subject": "Demande Famille Accueil Validée !",
-                                    "Variables": {
-                                        "nom": user?.firstname
-                                    }
-                                }
-                            ]
-                        }).then((mail) => {
-                            res.status(200).send({
-                                status: 200
-                            })
-                        }).catch((err) => {
-                            res.status(500).send({
-                                status: 500
-                            })
-                        })
 
-                })
-            }).catch((err) => {
-                res.status(500).send({
-                    status: 500
-                })
+        try {
+            const famille = await FamAccueil.findByIdAndUpdate(req.params.id, {
+                $set: {
+                    actif: true
+                }
+            }, { omitUndefined: true, new: true })
+            const user = await User.findByIdAndUpdate(famille?.user, {
+                $set: {
+                    isAdmin: true
+                }
             })
-    } else {
-        res.status(403).send({
-            status: 403
-        })
-    }
+            mailjet
+                .post("send", { 'version': 'v3.1' })
+                .request({
+                    "Messages": [
+                        {
+                            "From": {
+                                "Email": "lesanimauxdu27.web@gmail.com",
+                                "Name": "Les Animaux du 27"
+                            },
+                            "To": [
+                                {
+                                    "Email": user?.email,
+                                }
+                            ],
+                            "TemplateID": 4733581,
+                            "TemplateLanguage": true,
+                            "Subject": "Demande Famille Accueil Validée !",
+                            "Variables": {
+                                "nom": user?.firstname
+                            }
+                        }
+                    ]
+                })
+            res.status(200).send()
 
+        } catch (error) {
+            res.status(500).send({
+                status: 500
+            })
+        }
+    }
 }
 
 export const deactivateFamille = (req: Request, res: Response) => {
@@ -158,9 +145,8 @@ export const deleteFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         const exist = await FamAccueil.exists({ _id: req.params.id })
         if (exist) {
-            // TODO : MAIL
             try {
-                await FamAccueil.findOneAndDelete({ _id: req.params.id }).then((data) => {
+                await FamAccueil.findOneAndDelete({ _id: req.params.id }).populate('user').then((data) => {
                     res.status(200).send({})
                     mailjet.post("send", { 'version': 'v3.1' })
                         .request({
@@ -175,11 +161,11 @@ export const deleteFamille = async (req: Request, res: Response) => {
                                             "Email": data?.email
                                         }
                                     ],
-                                    "TemplateID": 4805652,
+                                    "TemplateID": 4861743,
                                     "TemplateLanguage": true,
                                     "Subject": "Votre demande a été refusée",
                                     "Variables": {
-
+                                        "name": data?.user?.firstname
                                     }
                                 }
                             ]

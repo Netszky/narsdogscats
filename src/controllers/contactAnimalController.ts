@@ -40,13 +40,21 @@ export const createContactAnimal = async (req: Request, res: Response) => {
                             },
                             "To": [
                                 {
-                                    "Email": famAccueil.email
+                                    "Email": famAccueil.email ?? "chigotjulien@gmail.com"
                                 }
                             ],
-                            "TemplateID": 4744170,
+                            "TemplateID": 4861835,
                             "TemplateLanguage": true,
                             "Subject": `Nouvelle demande de contact pour ${animalUpdated?.nom}`,
                             "Variables": {
+                                "animal": animalUpdated?.nom,
+                                "type": type,
+                                "nom": nom,
+                                "prenom": prenom,
+                                "email": email,
+                                "telephone": telephone,
+                                "infos": content,
+                                "url": `${process.env.FRONT_URL}famille-accueil/animaux/${animalUpdated?.id}`
                             }
                         }
                     ]

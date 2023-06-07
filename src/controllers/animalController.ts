@@ -103,12 +103,13 @@ export const createAnimal = async (req: Request, res: Response) => {
                                                 "TemplateLanguage": true,
                                                 "Subject": "Validation Animal en attente !",
                                                 "Variables": {
+                                                    "famille": update?.nom,
                                                     "nom": data.nom,
                                                     "Espece": data.espece,
                                                     "Age": data.age,
                                                     "Race": data.race,
                                                     "TypeA": data.typeAdoption,
-                                                    "url": `${process.env.FRONT_URL}admin/animal/${animal._id}`
+                                                    "url": `${process.env.FRONT_URL}admin/animal/`
                                                 }
                                             }
                                         ]
@@ -359,11 +360,9 @@ export const validateAnimal = async (req: Request, res: Response) => {
                 await Animal.findByIdAndUpdate(req.params.id, {
                     validated: true
                 }, { omitUndefined: true })
-                    .then((data) => {
-                        res.status(200).send({
-                            status: 200
-                        })
-                    })
+                const famille = FamAccueil.find({ animals: req.params.id })
+
+
             } catch (error) {
                 res.status(500).send({ status: 500 })
             }

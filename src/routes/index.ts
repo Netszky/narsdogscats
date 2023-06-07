@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import authRouter from '../routes/authRouter'
 import userRouter from '../routes/userRouter';
 import animalRouter from '../routes/animalRouter';
 import partenaireRouter from '../routes/partenaireRouter';
@@ -9,6 +10,7 @@ import abandonRouter from '../routes/abandonRouter';
 import animalContactRouter from '../routes/contactAnimalRouter';
 const router = Router()
 
+router.use("/auth", authRouter)
 router.use("/user", userRouter);
 router.use("/animal", animalRouter);
 router.use("/partenaire", partenaireRouter);
