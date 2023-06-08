@@ -5,10 +5,11 @@ import User from '~/models/userModel';
 import { CustomRequest } from '~/middlewares/verifyToken';
 import { mailjet } from '~/services/express';
 import FamAccueil from '~/models/famAccueil';
+import { getConfig } from '~/config/config';
 
 export const resetPassword = async (req: Request, res: Response) => {
 
-    const SECRET_JWT: Secret = process.env.SECRET_JWT!
+    const SECRET_JWT: Secret = getConfig('SECRET_JWT')
     await User.findOne({ email: req.body.email })
         .then((user) => {
             if (user) {
@@ -83,8 +84,8 @@ export const updateResetPassword = async (req: Request, res: Response) => {
                 })
                 .catch((err) => res.status(500).send({ status: 500 }));
         } catch (error) {
-            res.status(403).send({
-                status: 403
+            res.status(500).send({
+                status: 500
             })
         }
     } else {
@@ -98,12 +99,10 @@ export const updateResetPassword = async (req: Request, res: Response) => {
 export const verifyAdmin = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         res.status(200).send({
-            status: 200,
             isSuperAdmin: true
         })
     } else {
         res.status(403).send({
-            status: 403,
             isSuperAdmin: false
         })
     }
@@ -113,7 +112,6 @@ export const verifyAdmin = async (req: Request, res: Response) => {
 export const refreshToken = async (req: Request, res: Response) => {
     const info = (req as CustomRequest).user
     const famille = await FamAccueil.findOne({ user: info.id })
-
     res.status(200).send({
         isAdmin: info.isAdmin,
         isSuperAdmin: info.isSuperAdmin,
@@ -129,7 +127,7 @@ export const verifyResetToken = async (req: Request, res: Response) => {
         if (user?.resetToken === req.headers['authorization']) {
             res.status(200).send({ status: 200 })
         } else {
-            res.status(500).send({ status: 500 })
+            res.status(403).send({ status: 403 })
         }
     } catch (error) {
         res.status(500).send({ status: 500 })

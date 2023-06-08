@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { CustomRequest } from '~/middlewares/verifyToken';
 import Animal from '~/models/animalModel';
 import ContactAnimal from '~/models/contactAnimal';
-import FamAccueil, { IFamAccueil } from '~/models/famAccueil';
+import FamAccueil from '~/models/famAccueil';
 import { mailjet } from '~/services/express';
 
 
@@ -40,7 +40,7 @@ export const createContactAnimal = async (req: Request, res: Response) => {
                             },
                             "To": [
                                 {
-                                    "Email": famAccueil.email ?? "chigotjulien@gmail.com"
+                                    "Email": famAccueil.email ?? "lesanimauxdu27.web@gmail.com"
                                 }
                             ],
                             "TemplateID": 4861835,
@@ -59,71 +59,43 @@ export const createContactAnimal = async (req: Request, res: Response) => {
                         }
                     ]
                 })
-            res.status(201).send()
+            res.status(201).send({ message: "Demande créée" })
         } else {
             res.status(500).send({
-                status: 500
+                message: "Impossible de créer la demande"
             });
         }
     } catch (err) {
         res.status(500).send({
-            status: 500
+            message: "Impossible de créer la demande"
         });
     }
 }
 
 export const deleteAnimalContact = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
-        const exist = await ContactAnimal.exists({ _id: req.params.id })
-        if (exist) {
-            try {
+        try {
+            const exist = await ContactAnimal.exists({ _id: req.params.id })
+            if (exist) {
                 await ContactAnimal.findByIdAndUpdate(req.params.id, {
                     closed: true
                 }, { omitUndefined: true })
-                    .then((data) => {
-                        res.status(200).send({
-                            message: "Entree Supprimée ",
-                        })
-                    })
-            } catch (error) {
+                res.status(200).send({
+                    message: "Entree Supprimée ",
+                })
+
+            } else {
                 res.status(404).send({
                     message: "Aucun evenement trouvé"
                 })
             }
-        } else {
-            res.status(404).send({
-                message: "Aucun evenement trouvé"
+        } catch (error) {
+            res.status(500).send({
+                message: error || "Erreur dans la suppression de la demande de contact"
             })
         }
     } else {
-        res.status(401).send({
-            message: "Not admin"
-        })
-    }
-}
-
-export const getAnimalContactByFamily = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isAdmin) {
-        const familleId = (req as CustomRequest).user.fam
-        const contacts = await ContactAnimal.find({ famille: familleId })
-        if (contacts.length > 0) {
-            try {
-                res.status(200).send({
-                    closed: contacts.filter((f) => f.closed === true),
-                    new: contacts.filter((f) => f.closed === false)
-                })
-            } catch (error) {
-                res.status(500).send({
-                    message: "Aucun evenement trouvé"
-                })
-            }
-        } else {
-            res.status(200).send({
-                message: "Aucun evenement trouvé"
-            })
-        }
-    } else {
-        res.status(401).send({
+        res.status(403).send({
             message: "Not admin"
         })
     }

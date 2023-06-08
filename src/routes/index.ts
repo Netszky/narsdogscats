@@ -8,6 +8,8 @@ import evenementRouter from '../routes/evenementRouter';
 import familleAccueilRouter from '../routes/famAccueilRouter';
 import abandonRouter from '../routes/abandonRouter';
 import animalContactRouter from '../routes/contactAnimalRouter';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocs from '../swagger';
 const router = Router()
 
 router.use("/auth", authRouter)
@@ -19,5 +21,6 @@ router.use("/contact", contactRouter);
 router.use("/famille", familleAccueilRouter)
 router.use("/abandon", abandonRouter)
 router.use("/animal-contact", animalContactRouter)
+router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 export default router;

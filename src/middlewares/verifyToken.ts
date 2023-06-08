@@ -1,5 +1,6 @@
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import { getConfig } from '~/config/config';
 
 interface IUserToken {
     id: string,
@@ -16,7 +17,7 @@ export interface CustomRequest extends Request {
 
 
 export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
-    const SECRET_JWT: Secret = process.env.SECRET_JWT!;
+    const SECRET_JWT: Secret = getConfig('SECRET_JWT')
     try {
         const token = req.header('Authorization');
         if (!token) {
@@ -27,7 +28,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
         (req as CustomRequest).user = decoded;
         next();
     } catch (err) {
-        res.status(401).send({ status: "Unauthorized" });
+        res.status(401).send({ message: "Unauthorized" });
     }
 };
 

@@ -165,84 +165,72 @@ export const updateAnimal = async (req: Request, res: Response) => {
 }
 export const getAllAnimalsValidated = async (req: Request, res: Response) => {
 
-    if (Object.keys(req.query).length > 0) {
-        const query = filterAnimals(req.query)
-        await Animal.find(query).then((data) => {
+    try {
+        if (Object.keys(req.query).length > 0) {
+            const query = filterAnimals(req.query)
+            const animals = await Animal.find(query)
             res.status(200).send({
                 status: 200,
-                animals: data,
-                nbChien: data.filter(i => i.espece === "chien").length,
-                nbChat: data.filter(i => i.espece === "chat").length
+                animals: animals,
+                nbChien: animals.filter(i => i.espece === "chien").length,
+                nbChat: animals.filter(i => i.espece === "chat").length
 
             })
-        })
-    } else {
-        try {
-            await Animal.find({ validated: true }).then((data) => {
-                res.status(200).send({
-                    status: 200,
-                    animals: data,
-                    nbChien: data.filter(i => i.espece === "chien").length,
-                    nbChat: data.filter(i => i.espece === "chat").length
-                })
-            })
-        } catch (error) {
-            res.status(500).send({
-                status: 500
+        } else {
+            const animals = await Animal.find({ validated: true })
+            res.status(200).send({
+                status: 200,
+                animals: animals,
+                nbChien: animals.filter(i => i.espece === "chien").length,
+                nbChat: animals.filter(i => i.espece === "chat").length
             })
         }
+
+    }
+    catch (error) {
+        res.status(500).send({
+            message: error || "Erreur dans la récupération des animaux"
+        })
     }
 
 }
 export const getAllAnimalsID = async (req: Request, res: Response) => {
-    Animal.find({}, { _id: 1 }).then((data) => {
+    try {
+        const animals = await Animal.find({}, { _id: 1 })
+        res.status(200).send({
+            animals: animals
+        })
+    } catch (error) {
+        res.status(500).send({
+            message: error || "Erreur dans la récupération des animaux"
+        })
+    }
 
-        if (data) {
-            res.status(200).send({
-                status: 200,
-                animals: data
-            })
-        } else {
-            res.status(500).send({
-                status: 500,
-                animals: data
-            })
-        }
-    })
 }
 export const getAllAnimals = async (req: Request, res: Response) => {
-
-    Animal.find({}).then((data) => {
-        if (data) {
-            res.status(200).send({
-                status: 200,
-                animals: data
-            })
-        } else {
-            res.status(500).send({
-                status: 500
-            })
-        }
-    }).catch((err) => {
-        console.log(err);
-
-        res.status(500).send({
-            status: 500
+    try {
+        const animals = await Animal.find({})
+        res.status(200).send({
+            animals: animals
         })
-    });
+    } catch (error) {
+        res.status(500).send({
+            message: error || "Erreur dans la récupération des animaux"
+        })
+    }
+
 }
 
 
 export const getLatestAnimal = async (req: Request, res: Response) => {
     try {
-        await Animal.find({ validated: true }).sort({ createdAt: -1 }).limit(3)
-            .then((data) => res.status(200).send({
-                status: 200,
-                animals: data
-            }))
+        const animals = await Animal.find({ validated: true }).sort({ createdAt: -1 }).limit(3)
+        res.status(200).send({
+            animals: animals
+        })
     } catch (error) {
         res.status(500).send({
-            status: 500
+            message: error || "Erreur dans la récupération des animaux"
         })
     }
 };
@@ -251,27 +239,25 @@ export const getLatestAnimal = async (req: Request, res: Response) => {
 
 export const getAnimal = async (req: Request, res: Response) => {
     try {
-        await Animal.findById(req.params.id)
-            .then((data) => res.status(200).send({
-                status: 200,
-                animal: data
-            }))
+        const animal = await Animal.findById(req.params.id)
+        res.status(200).send({
+            animal: animal
+        })
     } catch (error) {
         res.status(500).send({
-            status: 500
+            message: error || "Erreur dans la récupération de l'animal"
         })
     }
 };
 export const getAnimalWithContact = async (req: Request, res: Response) => {
     try {
-        await Animal.findById(req.params.id).populate('contact')
-            .then((data) => res.status(200).send({
-                status: 200,
-                animal: data
-            }))
+        const animal = await Animal.findById(req.params.id).populate('contact')
+        res.status(200).send({
+            animal: animal
+        })
     } catch (error) {
         res.status(500).send({
-            status: 500
+            message: error || "Erreur dans la récupération de l'animal"
         })
     }
 };
@@ -280,8 +266,8 @@ export const getAnimalWithContact = async (req: Request, res: Response) => {
 export const deleteAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
         const exist = await Animal.exists({ _id: req.params.id })
-        if (exist) {
-            try {
+        try {
+            if (exist) {
                 await Animal.findOneAndDelete({ _id: req.params.id }).then((data) => {
                     if (data?.image) {
                         const deletePromises = data?.image?.map((url) => {
@@ -297,28 +283,28 @@ export const deleteAnimal = async (req: Request, res: Response) => {
                             });
                         });
                         Promise.all(deletePromises)
-                            .then(() => res.status(200).send({ status: 200 }))
-                            .catch((error) => res.status(500).send({ status: 500 }));
+                            .then(() => res.status(200).send({ message: "Animal supprimé" }))
+                            .catch((error) => res.status(500).send({ message: error || "Erreur dans la suppression de l'animal" }));
                     } else {
                         res.status(200).send({
-                            status: 200
+                            message: "Animal supprimé"
                         })
                     }
                 })
-            } catch (error) {
-
-                res.status(500).send({
-                    status: 500
+            } else {
+                res.status(404).send({
+                    message: "Aucun animal correspondant à l'id"
                 })
             }
-        } else {
+        } catch (error) {
+
             res.status(500).send({
-                status: 500
+                message: error || "Erreur dans la suppression de l'animal"
             })
         }
     } else {
         res.status(403).send({
-            status: 403
+            message: "Forbidden"
         })
     }
 }
@@ -326,54 +312,53 @@ export const deleteAnimal = async (req: Request, res: Response) => {
 
 export const unvalidateAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
-        const exist = await Animal.exists({ _id: req.params.id })
-        if (exist) {
-            try {
+        try {
+            const exist = await Animal.exists({ _id: req.params.id })
+            if (exist) {
                 await Animal.findByIdAndUpdate(req.params.id, {
                     validated: false
                 }, { omitUndefined: true })
-                    .then((data) => {
-                        res.status(200).send({
-                            status: 200
-                        })
-                    })
-            } catch (error) {
-                res.status(500).send({ status: 500 })
+                res.status(200).send({ message: "Animal Desactivé" })
+            } else {
+                res.status(404).send({
+                    message: "Aucun animal correspondant à l'id"
+                })
             }
-        } else {
-            res.status(500).send({
-                status: 500
-            })
+        }
+        catch (error) {
+            res.status(500).send({ message: error || "Erreur lors de l'activation de l'animal" })
         }
     } else {
         res.status(403).send({
-            status: 403
+            message: "Forbidden"
         })
     }
 }
 
+
+
+
 export const validateAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         const exist = await Animal.exists({ _id: req.params.id })
-        if (exist) {
-            try {
+        try {
+            if (exist) {
                 await Animal.findByIdAndUpdate(req.params.id, {
                     validated: true
                 }, { omitUndefined: true })
-                const famille = FamAccueil.find({ animals: req.params.id })
-
-
-            } catch (error) {
-                res.status(500).send({ status: 500 })
+                // const famille = FamAccueil.find({ animals: req.params.id })
+                res.status(200).send({ message: "Animal Activé" })
+            } else {
+                res.status(404).send({
+                    message: "Aucun animal correspondant à l'id"
+                })
             }
-        } else {
-            res.status(500).send({
-                status: 500
-            })
+        } catch (error) {
+            res.status(500).send({ message: error || "Erreur lors de l'activation de l'animal" })
         }
     } else {
         res.status(403).send({
-            status: 403
+            message: "Forbidden"
         })
     }
 }

@@ -7,132 +7,97 @@ import { mailjet } from '~/services/express';
 export const createContact = async (req: Request, res: Response) => {
 
     const { type, telephone, email, content, nom, prenom } = req.body
+    try {
 
-    const contact = new Contact({
-        type: type,
-        telephone: telephone,
-        email: email,
-        content: content,
-        nom: nom,
-        prenom: prenom
-    });
-    await contact.save()
-        .then((data) => {
-            mailjet.post("send", { 'version': 'v3.1' })
-                .request({
-                    "Messages": [
-                        {
-                            "From": {
+        const contact = new Contact({
+            type: type,
+            telephone: telephone,
+            email: email,
+            content: content,
+            nom: nom,
+            prenom: prenom
+        });
+        await contact.save()
+        mailjet.post("send", { 'version': 'v3.1' })
+            .request({
+                "Messages": [
+                    {
+                        "From": {
+                            "Email": "lesanimauxdu27.web@gmail.com",
+                            "Name": "Les Animaux du 27"
+                        },
+                        "To": [
+                            {
                                 "Email": "lesanimauxdu27.web@gmail.com",
-                                "Name": "Les Animaux du 27"
-                            },
-                            "To": [
-                                {
-                                    "Email": "lesanimauxdu27.web@gmail.com",
-                                }
-                            ],
-                            "TemplateID": 4805639,
-                            "TemplateLanguage": true,
-                            "Subject": "Nouvelle demande de contact",
-                            "Variables": {
-                                "type": type,
-                                "telephone": telephone,
-                                "email": email,
-                                "content": content,
-                                "nom": nom,
-                                "prenom": prenom
                             }
+                        ],
+                        "TemplateID": 4805639,
+                        "TemplateLanguage": true,
+                        "Subject": "Nouvelle demande de contact",
+                        "Variables": {
+                            "type": type,
+                            "telephone": telephone,
+                            "email": email,
+                            "content": content,
+                            "nom": nom,
+                            "prenom": prenom
                         }
-                    ]
-                }).then((result) => {
-                    res.status(201).send()
-                }).catch((err) => {
-                    res.status(500).send()
-                });
-        }).catch((err) => {
-            res.status(500).send({
-                status: 500
+                    }
+                ]
             })
+        res.status(201).send({
+            message: "Demande de contact créée"
         })
-        .catch((err) => {
-            console.log(err);
-            res.status(500).send({
-                status: 500
-            })
-        })
-}
-export const getAllContact = async (req: Request, res: Response) => {
-    try {
-        await Contact.find().sort({ createdAt: -1 }).then((data) => {
-            res.status(200).send({
-                contacts: data,
-
-            })
-        })
-    }
-    catch (error) {
-        res.status(404).send({
-        })
-
-    }
-
-}
-
-export const getActiveContact = async (req: Request, res: Response) => {
-    try {
-        await Contact.find({ closed: false }).then((data) => {
-            res.status(200).send({
-                contact: data,
-
-            })
-        })
-    }
-    catch (error) {
-        res.status(404).send({
-            message: "Aucun Contact trouvé"
-        })
-
-    }
-
-}
-
-
-export const getContact = async (req: Request, res: Response) => {
-
-    try {
-        await Contact.findById(req.params.id)
-            .then((data) => res.status(200).send({
-                contact: data
-            }))
     } catch (error) {
-        res.status(404).send({
-            message: "Aucun contact trouvé"
+        res.status(500).send({
+            message: error || "Erreur dans la création de la demande de contact"
         })
     }
-};
+}
+
+export const getAllContact = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        try {
+            const contacts = await Contact.find().sort({ createdAt: -1 })
+            res.status(200).send({
+                contacts: contacts,
+            })
+        }
+        catch (error) {
+            res.status(500).send({
+                message: error || "Erreur lors de la récupération des demandes de contacts"
+            })
+
+        }
+    } else {
+        res.status(403).send({ message: "Forbidden" })
+    }
+
+}
 
 export const deleteContact = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isAdmin) {
-        const exist = await Contact.exists({ _id: req.params.id })
-        if (exist) {
-            try {
-                await Contact.findByIdAndUpdate(req.params.id, { closed: true }, { omitUndefined: true }).then((data) => {
-                    res.status(200).send({
-                        message: "Contact Closed",
-                    })
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        try {
+            const exist = await Contact.exists({ _id: req.params.id })
+            if (exist) {
+
+                await Contact.findByIdAndUpdate(req.params.id, { closed: true }, { omitUndefined: true })
+                res.status(200).send({
+                    message: "Contact Closed",
                 })
-            } catch (error) {
+
+            } else {
                 res.status(404).send({
                     message: "Aucun evenement trouvé"
                 })
             }
-        } else {
-            res.status(404).send({
-                message: "Aucun evenement trouvé"
+        } catch (error) {
+            res.status(500).send({
+                message: error || "Erreur dans la suppresion de la demande de contact"
             })
         }
     } else {
-        res.status(401).send({
+        res.status(403).send({
             message: "Not admin"
         })
     }

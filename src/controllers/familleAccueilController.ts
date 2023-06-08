@@ -45,13 +45,11 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
                         }
                     ]
                 })
-            res.status(201).send()
+            res.status(201).send({ message: "Famille d'Accueil créée" })
         }
 
     } catch (error) {
-        console.log(error);
-
-        res.status(500).send()
+        res.status(500).send({ message: error || "Erreur lors de la creation de la famille d'accueil" })
     }
 
 }
@@ -59,95 +57,106 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
 export const getAllFamilleAccueil = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         try {
-            const familles = await FamAccueil.find({}).populate('user')
+            const familles = await FamAccueil.find({}).populate('user', ['-password', '-isAdmin', '-resetToken', '-isSuperAdmin'])
             res.status(200).send({ familles: familles })
-        } catch {
-            res.status(500).send()
+        } catch (error) {
+            res.status(500).send({ message: error || "Erreur lors de la recupération des familles d'accueil" })
         }
     } else {
-        res.status(403).send()
+        res.status(403).send({ message: "Forbidden" })
     }
 
 }
 
 export const validateFamille = async (req: Request, res: Response) => {
-
     if ((req as CustomRequest).user.isSuperAdmin) {
-
         try {
-            const famille = await FamAccueil.findByIdAndUpdate(req.params.id, {
-                $set: {
-                    actif: true
-                }
-            }, { omitUndefined: true, new: true })
-            const user = await User.findByIdAndUpdate(famille?.user, {
-                $set: {
-                    isAdmin: true
-                }
-            })
-            mailjet
-                .post("send", { 'version': 'v3.1' })
-                .request({
-                    "Messages": [
-                        {
-                            "From": {
-                                "Email": "lesanimauxdu27.web@gmail.com",
-                                "Name": "Les Animaux du 27"
-                            },
-                            "To": [
-                                {
-                                    "Email": user?.email,
-                                }
-                            ],
-                            "TemplateID": 4733581,
-                            "TemplateLanguage": true,
-                            "Subject": "Demande Famille Accueil Validée !",
-                            "Variables": {
-                                "nom": user?.firstname
-                            }
-                        }
-                    ]
-                })
-            res.status(200).send()
+            const exist = await FamAccueil.exists({ _id: req.params.id })
+            if (exist) {
 
+                const famille = await FamAccueil.findByIdAndUpdate(req.params.id, {
+                    $set: {
+                        actif: true
+                    }
+                }, { omitUndefined: true, new: true })
+                const user = await User.findByIdAndUpdate(famille?.user, {
+                    $set: {
+                        isAdmin: true
+                    }
+                })
+                mailjet
+                    .post("send", { 'version': 'v3.1' })
+                    .request({
+                        "Messages": [
+                            {
+                                "From": {
+                                    "Email": "lesanimauxdu27.web@gmail.com",
+                                    "Name": "Les Animaux du 27"
+                                },
+                                "To": [
+                                    {
+                                        "Email": user?.email,
+                                    }
+                                ],
+                                "TemplateID": 4733581,
+                                "TemplateLanguage": true,
+                                "Subject": "Demande Famille Accueil Validée !",
+                                "Variables": {
+                                    "nom": user?.firstname
+                                }
+                            }
+                        ]
+                    })
+                res.status(200).send({ message: "Famille activée" })
+            } else {
+                res.status(404).send({
+                    message: "Aucune Famille correspondante"
+                })
+            }
         } catch (error) {
             res.status(500).send({
-                status: 500
+                message: error || "Erreur lors de la validation de la famille"
             })
         }
+    } else {
+        res.status(403).send({ message: "Forbidden" })
     }
 }
 
-export const deactivateFamille = (req: Request, res: Response) => {
+export const deactivateFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
-        FamAccueil.findByIdAndUpdate(req.params.id, {
-            $set: {
-                actif: false
+        try {
+            const exist = await FamAccueil.exists({ _id: req.params.id })
+            if (exist) {
+
+                const famille = await FamAccueil.findByIdAndUpdate(req.params.id, {
+                    $set: {
+                        actif: false
+                    }
+                }, { new: true, omitUndefined: true })
+                await User.findOneAndUpdate({ famAccueil: famille?._id }, { isAdmin: false }, { omitUndefined: true })
+                res.status(200).send({ message: "Famille desactivée" })
+            } else {
+                res.status(404).send({
+                    message: "Aucune Famille correspondante"
+                })
             }
-        }, { omitUndefined: true }).then((data) => {
-            User.findOneAndUpdate({ famAccueil: data?._id }, { isAdmin: false }, { omitUndefined: true })
-                .then((user) => {
-                    res.status(200).send()
-                })
-                .catch((err) => {
-                    res.status(500).send()
-                })
-        })
-
+        } catch (error) {
+            res.status(500).send({
+                message: error || "Erreur lors de la validation de la famille"
+            })
+        }
     } else {
-        res.status(403).send({
-
-        })
+        res.status(403).send({ message: "Forbidden" })
     }
 }
 
 export const deleteFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
-        const exist = await FamAccueil.exists({ _id: req.params.id })
-        if (exist) {
-            try {
+        try {
+            const exist = await FamAccueil.exists({ _id: req.params.id })
+            if (exist) {
                 await FamAccueil.findOneAndDelete({ _id: req.params.id }).populate('user').then((data) => {
-                    res.status(200).send({})
                     mailjet.post("send", { 'version': 'v3.1' })
                         .request({
                             "Messages": [
@@ -171,53 +180,53 @@ export const deleteFamille = async (req: Request, res: Response) => {
                             ]
                         })
                 })
-            } catch (error) {
-                res.status(500).send({
+                res.status(200).send({
+                    message: "Famille supprimée"
+                })
+
+            } else {
+                res.status(404).send({
+                    message: "Aucune famille correspondante"
                 })
             }
-        } else {
+        } catch (error) {
             res.status(500).send({
+                message: error || "Erreur lors de la suppression de la famille"
             })
         }
     } else {
         res.status(403).send({
+            message: "Forbidden"
         })
     }
 }
 
 export const updateFamille = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
-        console.log(req.body);
-
-        FamAccueil.findByIdAndUpdate((req as CustomRequest).user.fam, {
-            email: req.body.email,
-            telephone: req.body.telephone,
-            capaciteChien: req.body.capaciteChien,
-            capaciteChat: req.body.capaciteChat,
-        }, { omitUndefined: true, })
-            .then((data) => {
-                res.status(200).send({
+        try {
+            const exist = await FamAccueil.exists({ _id: (req as CustomRequest).user.fam })
+            if (exist) {
+                await FamAccueil.findByIdAndUpdate((req as CustomRequest).user.fam, {
+                    email: req.body.email,
+                    telephone: req.body.telephone,
+                    capaciteChien: req.body.capaciteChien,
+                    capaciteChat: req.body.capaciteChat,
+                    showPhone: req.body.showPhone
+                }, { omitUndefined: true, })
+                res.status(200).send({ message: "Famille modifiée" })
+            } else {
+                res.status(404).send({
+                    message: "Aucune Famille correspondante"
                 })
+            }
+        } catch (error) {
+            res.status(500).send({
+                message: error || "Erreur lors de la modification de la famille"
             })
-            .catch((err) => {
-                res.status(500)
-            })
-    } else {
-        res.status(403).send()
-    }
-}
-
-export const getInactiveFamille = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isSuperAdmin) {
-        const inactiveFamille = await FamAccueil.find({ actif: false })
-        if (inactiveFamille.length === 0) {
-            res.status(500).send()
-        } else {
-            res.status(200).send({ inactiveFamille: inactiveFamille })
         }
     } else {
         res.status(403).send({
-            status: 403
+            message: "Forbidden"
         })
     }
 }
@@ -274,8 +283,10 @@ export const getFamillesCapacity = async (req: Request, res: Response) => {
         }
         res.status(200).send({ canReceiveChien: canReceiveChien, canReceiveChat: canReceiveChat })
 
-    } catch {
-        res.status(500).send({})
+    } catch (error) {
+        res.status(500).send({
+            message: error || "Erreur lors de la récupération de la capacité d'accueil"
+        })
     }
 
 }
@@ -285,13 +296,11 @@ export const verifyFamille = async (req: Request, res: Response) => {
         const id = (req as CustomRequest).user.id
         const famille = await FamAccueil.findOne({ user: id }).populate('user')
         res.status(200).send({
-            status: 200,
             isAdmin: famille?.user.isAdmin,
             actif: famille?.actif,
         })
     } catch {
         res.status(500).send({
-            status: 500,
             isAdmin: false,
             actif: false
         })
@@ -301,16 +310,17 @@ export const verifyFamille = async (req: Request, res: Response) => {
 export const getFamilleByID = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
         try {
-            const famille = await FamAccueil.findById((req as CustomRequest).user.fam).populate({
-                path: 'animals', populate: {
-                    path: 'contact',
-                    match: { closed: false }
-                }
-            })
-            if (famille) {
+            const exist = await FamAccueil.exists({ _id: (req as CustomRequest).user.fam })
+            if (exist) {
+
+                const famille = await FamAccueil.findById((req as CustomRequest).user.fam).populate({
+                    path: 'animals'
+                })
                 res.status(200).send({ famille: famille })
             } else {
-                res.status(200).send({ famille: null })
+                res.status(404).send({
+                    message: "Aucune famille correspondante"
+                })
             }
         } catch {
             res.status(500).send({})
@@ -318,7 +328,7 @@ export const getFamilleByID = async (req: Request, res: Response) => {
 
     } else {
         res.status(403).send({
-            status: 403
+            message: "Forbidden"
         })
     }
 }

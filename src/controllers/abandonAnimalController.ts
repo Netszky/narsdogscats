@@ -5,8 +5,6 @@ import { mailjet } from '~/services/express';
 
 
 export const createAbandon = async (req: Request, res: Response) => {
-    console.log("here");
-
     try {
         const { race, telephone, email, content, nom, prenom, espece, age } = req.body
 
@@ -43,11 +41,14 @@ export const createAbandon = async (req: Request, res: Response) => {
                 ]
 
             })
-        res.status(201).send()
+        res.status(201).send({
+            message: "created"
+        })
     } catch (error) {
-        console.log(error);
 
-        res.status(500).send()
+        res.status(500).send({
+            message: error
+        })
     }
 }
 
@@ -55,34 +56,45 @@ export const createAbandon = async (req: Request, res: Response) => {
 export const getAllAbandon = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         try {
-            await AbandonAnimal.find().then((data) => {
-                res.status(200).send({
-                    abandons: data,
-                })
+            const abandons = await AbandonAnimal.find()
+            res.status(200).send({
+                abandons: abandons,
             })
         }
         catch (error) {
-            res.status(404).send({})
+            res.status(500).send({
+                message: error || "Erreur dans la récupération des demandes d'abandons"
+            })
         }
+    } else {
+        res.status(403).send({
+            message: "Forbidden"
+        })
     }
 }
 
 export const deleteAbandon = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         try {
-            await AbandonAnimal.findByIdAndUpdate(req.params.id, { closed: true }, { omitUndefined: true })
-                .then((data) => {
-                    res.status(200).send({
-                        message: "Entree Supprimée ",
-                    })
+            const exist = await AbandonAnimal.exists({ _id: req.params.id })
+            if (exist) {
+
+                await AbandonAnimal.findByIdAndUpdate(req.params.id, { closed: true }, { omitUndefined: true })
+                res.status(200).send({
+                    message: "Entree Supprimée ",
                 })
+            } else {
+                res.status(404).send({
+                    message: "Aucun evenement trouvé"
+                })
+            }
         } catch (error) {
-            res.status(404).send({
-                message: "Aucun evenement trouvé"
+            res.status(500).send({
+                message: error || "Erreur dans la suppression de la demande d'abandon"
             })
         }
     } else {
-        res.status(401).send({
+        res.status(403).send({
             message: "Not admin"
         })
     }

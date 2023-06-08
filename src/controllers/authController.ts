@@ -3,10 +3,12 @@ import bcrypt from 'bcrypt'
 import jwt, { Secret } from 'jsonwebtoken';
 import User from '~/models/userModel';
 import FamAccueil from '~/models/famAccueil';
+import { getConfig } from '~/config/config';
+
 
 export const login = async (req: Request, res: Response) => {
 
-    const SECRET_JWT: Secret = process.env.SECRET_JWT!
+    const SECRET_JWT: Secret = getConfig('SECRET_JWT')
 
     const email = req.body.email.toLowerCase()
     await User.findOne({
@@ -43,17 +45,16 @@ export const login = async (req: Request, res: Response) => {
             })
         }
     }).catch((err) => {
-        console.log(err.message);
-        return res.status(401).send({
-            error: 401,
-            message: "User Unknown"
+        res.status(401).send({
+            auth: false,
+            token: null
         })
     })
 };
 
 
 export const register = async (req: Request, res: Response) => {
-    const SECRET_JWT: Secret = process.env.SECRET_JWT!
+    const SECRET_JWT: Secret = getConfig('SECRET_JWT')
     const hashPassword = bcrypt.hashSync(req.body.password, 10);
     const user = new User({
         firstname: req.body.firstname,
@@ -84,8 +85,7 @@ export const register = async (req: Request, res: Response) => {
         })
         .catch((err) => {
             res.status(500).send({
-                error: 500,
-                message: err.message || "Error"
+                message: err.message || "Erreur dans la création de l'utilisateur"
             })
         })
 }
