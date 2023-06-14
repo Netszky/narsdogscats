@@ -17,7 +17,6 @@ export const login = async (req: Request, res: Response) => {
 
         if (bcrypt.compareSync(req.body.password, data!.password)) {
             const famille = await FamAccueil.findOne({ user: data?.id })
-            console.log(famille);
 
             let userToken = jwt.sign({
                 id: data!._id,
@@ -86,6 +85,7 @@ export const register = async (req: Request, res: Response) => {
         .catch((err) => {
             res.status(500).send({
                 message: err.message || "Erreur dans la création de l'utilisateur"
+
             })
         })
 }

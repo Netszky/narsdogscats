@@ -35,7 +35,6 @@ export const getAllPartenaire = async (req: Request, res: Response) => {
         })
     }
     catch (error) {
-        console.log(error);
 
         res.status(500).send({
             message: error || "Erreur dans la récupération des partenaires"
