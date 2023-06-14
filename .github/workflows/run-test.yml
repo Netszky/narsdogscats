@@ -1,4 +1,4 @@
-name: Run Tests
+name: Run Tests and build
 
 on:
   push:
@@ -28,3 +28,7 @@ jobs:
       - name: Build
         if: success()
         run: npm run build
+
+      - name: Display size of dist directory
+        if: success()
+        run: du -sh dist
