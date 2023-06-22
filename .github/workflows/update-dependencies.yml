@@ -1,0 +1,42 @@
+name: Update Dependencies and Test Compatibility
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Exécutez ce pipeline une fois par jour à minuit
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Update dependencies
+        run: |
+          npm update
+          npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run build
+        run: npm run build
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const issue_body = `Tests failed after updating dependencies on ${new Date().toDateString()}`;
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Dependency Update Failure',
+              body: issue_body
+            });
