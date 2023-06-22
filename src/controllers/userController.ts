@@ -64,7 +64,6 @@ export const resetPassword = async (req: Request, res: Response) => {
 export const updateResetPassword = async (req: Request, res: Response) => {
     const id = (req as CustomRequest).user.id
     if (req.body.password) {
-
         const hasedPassword = bcrypt.hashSync(req.body.password, 10);
         try {
             await User.findByIdAndUpdate(id,
@@ -86,7 +85,7 @@ export const updateResetPassword = async (req: Request, res: Response) => {
         }
     } else {
         res.status(500).send({
-            status: 500
+            message: 500
         })
     }
 
