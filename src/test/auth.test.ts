@@ -134,8 +134,7 @@ describe('login', () => {
     });
 
     test('should fail to login with incorrect password', async () => {
-        // Setup mocks so that bcrypt.compareSync returns false
-        // ...
+
         (bcrypt.compareSync as jest.Mock).mockReturnValue(false);
         await login(mockRequest as unknown as Request, mockResponse as unknown as Response);
 
@@ -147,8 +146,7 @@ describe('login', () => {
     });
 
     test('should fail to login with non-existing email', async () => {
-        // Setup mocks so that User.findOne returns null
-        // ...
+
         (User.findOne as jest.Mock).mockResolvedValue(null);
         await login(mockRequest as unknown as Request, mockResponse as unknown as Response);
 
@@ -160,8 +158,7 @@ describe('login', () => {
     });
 
     test('should fail when there is an error retrieving the user', async () => {
-        // Setup mocks so that User.findOne throws an error
-        // ...
+
         (User.findOne as jest.Mock).mockResolvedValue(null);
         await login(mockRequest as unknown as Request, mockResponse as unknown as Response);
 

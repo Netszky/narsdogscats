@@ -161,8 +161,24 @@ export const createAnimal = async (req: Request, res: Response) => {
     }
 }
 export const updateAnimal = async (req: Request, res: Response) => {
-
+    if ((req as CustomRequest).user.isAdmin) {
+        const exist = await Animal.exists({ _id: req.params.id })
+        try {
+            if (exist) {
+                Animal.findByIdAndUpdate(req.params.id, {
+                    ...req.body
+                })
+            } else {
+                res.status(404).send({
+                    message: 'Animal Introuvable'
+                })
+            }
+        } catch (error) {
+            res.status(500).send({ message: "Une erreur est survenue" })
+        }
+    }
 }
+
 export const getAllAnimalsValidated = async (req: Request, res: Response) => {
 
     try {
@@ -177,7 +193,7 @@ export const getAllAnimalsValidated = async (req: Request, res: Response) => {
 
             })
         } else {
-            const animals = await Animal.find({ validated: true })
+            const animals = await Animal.find({ status: 1 })
             res.status(200).send({
                 status: 200,
                 animals: animals,
@@ -224,7 +240,7 @@ export const getAllAnimals = async (req: Request, res: Response) => {
 
 export const getLatestAnimal = async (req: Request, res: Response) => {
     try {
-        const animals = await Animal.find({ validated: true }).sort({ createdAt: -1 }).limit(3)
+        const animals = await Animal.find({ status: 1 }).sort({ createdAt: -1 }).limit(3)
         res.status(200).send({
             animals: animals
         })
@@ -316,7 +332,7 @@ export const unvalidateAnimal = async (req: Request, res: Response) => {
             const exist = await Animal.exists({ _id: req.params.id })
             if (exist) {
                 await Animal.findByIdAndUpdate(req.params.id, {
-                    validated: false
+                    status: 0
                 }, { omitUndefined: true })
                 res.status(200).send({ message: "Animal Desactivé" })
             } else {
@@ -344,7 +360,7 @@ export const validateAnimal = async (req: Request, res: Response) => {
         try {
             if (exist) {
                 await Animal.findByIdAndUpdate(req.params.id, {
-                    validated: true
+                    status: 1
                 }, { omitUndefined: true })
                 // const famille = FamAccueil.find({ animals: req.params.id })
                 res.status(200).send({ message: "Animal Activé" })

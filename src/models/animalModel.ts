@@ -14,7 +14,6 @@ export interface IAnimal {
     birthdate: Date,
     contact: Types.ObjectId[],
     image: string[],
-    validated: boolean,
     status: number
 }
 
@@ -53,7 +52,6 @@ const AnimalSchema = new Schema<IAnimal>({
     // 2 Reserve
     // 3 Adopte
     status: { type: Number, required: false, default: 0, enum: [0, 1, 2, 3] },
-    validated: { type: Boolean, required: false, default: false }
 }, { timestamps: true });
 
 AnimalSchema.pre('findOneAndDelete', async function (next) {

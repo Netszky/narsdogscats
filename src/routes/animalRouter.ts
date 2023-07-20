@@ -657,7 +657,7 @@ router.put("/validate/:id", verifyToken, validateAnimal)
  */
 router.put("/unvalidate/:id", verifyToken, unvalidateAnimal)
 
-// router.put("/:id", verifyToken, upload.fields([{ name: 'images' }]), updateAnimal);
+router.put("/:id", verifyToken, updateAnimal);
 
 
 export default router;

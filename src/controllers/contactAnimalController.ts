@@ -77,9 +77,7 @@ export const deleteAnimalContact = async (req: Request, res: Response) => {
         try {
             const exist = await ContactAnimal.exists({ _id: req.params.id })
             if (exist) {
-                await ContactAnimal.findByIdAndUpdate(req.params.id, {
-                    closed: true
-                }, { omitUndefined: true })
+                await ContactAnimal.findByIdAndDelete(req.params.id)
                 res.status(200).send({
                     message: "Entree Supprimée ",
                 })

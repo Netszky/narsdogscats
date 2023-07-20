@@ -81,7 +81,7 @@ export const deleteContact = async (req: Request, res: Response) => {
             const exist = await Contact.exists({ _id: req.params.id })
             if (exist) {
 
-                await Contact.findByIdAndUpdate(req.params.id, { closed: true }, { omitUndefined: true })
+                await Contact.findByIdAndDelete(req.params.id)
                 res.status(200).send({
                     message: "Contact Closed",
                 })
