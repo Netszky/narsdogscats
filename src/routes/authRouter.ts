@@ -84,7 +84,7 @@ router.post("/login", login)
  *               email: john.doe@example.com
  *               password: password123
  *     responses:
- *       200:
+ *       201:
  *         description: Inscription et authentification avec succès
  *         content:
  *           application/json:
