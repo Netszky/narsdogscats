@@ -56,7 +56,7 @@ export const createAbandon = async (req: Request, res: Response) => {
 export const getAllAbandon = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         try {
-            const abandons = await AbandonAnimal.find()
+            const abandons = await AbandonAnimal.find().sort({ createdAt: -1 })
             res.status(200).send({
                 abandons: abandons,
             })
@@ -79,7 +79,7 @@ export const deleteAbandon = async (req: Request, res: Response) => {
             const exist = await AbandonAnimal.exists({ _id: req.params.id })
             if (exist) {
 
-                await AbandonAnimal.findByIdAndUpdate(req.params.id, { closed: true }, { omitUndefined: true })
+                await AbandonAnimal.findByIdAndDelete(req.params.id)
                 res.status(200).send({
                     message: "Entree Supprimée ",
                 })

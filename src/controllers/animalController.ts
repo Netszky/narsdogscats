@@ -326,44 +326,16 @@ export const deleteAnimal = async (req: Request, res: Response) => {
 }
 
 
-export const unvalidateAnimal = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isSuperAdmin) {
-        try {
-            const exist = await Animal.exists({ _id: req.params.id })
-            if (exist) {
-                await Animal.findByIdAndUpdate(req.params.id, {
-                    status: 0
-                }, { omitUndefined: true })
-                res.status(200).send({ message: "Animal Desactivé" })
-            } else {
-                res.status(404).send({
-                    message: "Aucun animal correspondant à l'id"
-                })
-            }
-        }
-        catch (error) {
-            res.status(500).send({ message: error || "Erreur lors de l'activation de l'animal" })
-        }
-    } else {
-        res.status(403).send({
-            message: "Forbidden"
-        })
-    }
-}
 
-
-
-
-export const validateAnimal = async (req: Request, res: Response) => {
+export const changeAnimalStatus = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         const exist = await Animal.exists({ _id: req.params.id })
         try {
             if (exist) {
                 await Animal.findByIdAndUpdate(req.params.id, {
-                    status: 1
+                    status: req.body.status
                 }, { omitUndefined: true })
-                // const famille = FamAccueil.find({ animals: req.params.id })
-                res.status(200).send({ message: "Animal Activé" })
+                res.status(200).send({ message: "Animal Modifié" })
             } else {
                 res.status(404).send({
                     message: "Aucun animal correspondant à l'id"
