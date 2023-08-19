@@ -14,7 +14,6 @@ export interface IFamAccueil {
     capaciteActuelleChat: number,
     actif: boolean,
     showPhone: boolean,
-    animals: IAnimal[],
     user: IUser
 }
 
@@ -29,22 +28,8 @@ const FamAccueilSchema = new Schema<IFamAccueil>({
     showPhone: { type: Boolean, required: true, default: false },
     adresse: { type: String, required: true },
     actif: { type: Boolean, required: false, default: false },
-    animals: [{ type: Schema.Types.ObjectId, ref: 'Animal', required: false },],
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
-
-FamAccueilSchema.pre('findOneAndDelete', async function (next) {
-
-    const famAccueilId = this.getQuery()["_id"];
-    const famAccueil = await this.model.findById(famAccueilId) as IFamAccueil
-
-    const Animal = mongoose.model('Animal');
-
-    await Animal.deleteMany({ _id: { $in: famAccueil.animals } });
-
-    next();
-});
-
 const FamAccueil = model<IFamAccueil>('FamAccueil', FamAccueilSchema);
 
 

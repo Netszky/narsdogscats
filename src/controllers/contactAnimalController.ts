@@ -30,7 +30,7 @@ export const createContactAnimal = async (req: Request, res: Response) => {
                 }
             }, { new: true, omitUndefined: true });
 
-            mailjet.post("send", { 'version': 'v3.1' })
+            await mailjet.post("send", { 'version': 'v3.1' })
                 .request({
                     "Messages": [
                         {

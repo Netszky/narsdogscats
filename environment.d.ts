@@ -1,4 +1,4 @@
-import jwt, { Secret } from "jsonwebtoken";
+import  { Secret } from "jsonwebtoken";
 
 declare global {
   namespace NodeJS {

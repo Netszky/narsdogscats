@@ -1,5 +1,5 @@
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { getConfig } from '~/config/config';
 
 interface IUserToken {
@@ -13,7 +13,7 @@ interface IUserToken {
 export interface CustomRequest extends Request {
     token: string | JwtPayload;
     user: IUserToken
-};
+}
 
 
 export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
@@ -24,8 +24,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
             throw new Error();
         }
 
-        const decoded = jwt.verify(token, SECRET_JWT) as IUserToken;
-        (req as CustomRequest).user = decoded;
+        (req as CustomRequest).user = jwt.verify(token, SECRET_JWT) as IUserToken;
         next();
     } catch (err) {
         res.status(401).send({ message: "Unauthorized" });

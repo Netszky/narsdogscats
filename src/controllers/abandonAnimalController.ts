@@ -19,7 +19,7 @@ export const createAbandon = async (req: Request, res: Response) => {
             age: age
         });
         await contact.save()
-        mailjet.post("send", { 'version': 'v3.1' })
+        await mailjet.post("send", { 'version': 'v3.1' })
             .request({
                 "Messages": [
                     {

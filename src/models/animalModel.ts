@@ -3,44 +3,57 @@ import mongoose, { Schema, model, Types } from 'mongoose';
 export interface IAnimal {
     _id: Types.ObjectId,
     nom: string,
-    age: number,
-    espece: string,
+    espece: number,
     race: string,
-    sexe: string,
+    sexe: number,
     caractere: string,
-    entente: string[],
-    typeAdoption: string,
+    ententeChien: number,
+    ententeChat: number,
+    ententeEnfant: number,
+    ententeEtranger: number,
+    typeAdoption: number,
     taille: string,
+    gabarit: number,
     birthdate: Date,
     contact: Types.ObjectId[],
     image: string[],
-    status: number
+    affectueux: number,
+    calme: number,
+    joueur: number,
+    bruit: number
+    status: number,
+    famille: Types.ObjectId
 }
 
 const AnimalSchema = new Schema<IAnimal>({
     nom: { type: String, required: true },
-    age: { type: Number, required: false },
     race: { type: String, required: true },
-    sexe: { type: String, required: true, enum: ["F", "M"] },
+    // 1 F 2M
+    sexe: { type: Number, required: true, enum: [1, 2] },
     caractere: { type: String, required: true },
-    entente: [
-        {
-            type: String,
-            required: true,
-            enum: ["chat", "chien", "enfant"]
-        }
-    ],
+    ententeEnfant: { type: Number, min: 0, max: 5, required: false },
+    ententeChien: { type: Number, min: 0, max: 5, required: false },
+    ententeChat: { type: Number, min: 0, max: 5, required: false },
+    ententeEtranger: { type: Number, min: 0, max: 5, required: false },
+    affectueux: { type: Number, min: 0, max: 5, required: false },
+    calme: { type: Number, min: 0, max: 5, required: false },
+    joueur: { type: Number, min: 0, max: 5, required: false },
+    bruit: { type: Number, min: 0, max: 5, required: false },
+    // 0 = normal 1 = retraite 2 = sos
     typeAdoption: {
-        type: String,
+        type: Number,
         required: true,
-        enum: ["normal", "sos", "retraite"]
+        enum: [0, 1, 2]
     },
+    // 1 = chat 2 = chien
     espece: {
-        type: String,
+        type: Number,
         required: true,
-        enum: ["chat", "chien"]
+        enum: [1, 2]
     },
-    taille: { type: String, required: false, enum: ["petit", "moyen", "grand"] },
+    taille: { type: String, required: false },
+    // 1 petit 2 moyen 3 grand
+    gabarit: { type: Number, required: false, enum: [1, 2, 3] },
     birthdate: { type: Date, required: false },
     contact: [{ type: Schema.Types.ObjectId, ref: "ContactAnimal" }],
     image: [{
@@ -52,22 +65,9 @@ const AnimalSchema = new Schema<IAnimal>({
     // 2 Reserve
     // 3 Adopte
     status: { type: Number, required: false, default: 0, enum: [0, 1, 2, 3] },
+    famille: { type: Schema.Types.ObjectId, ref: "FamAccueil" }
 }, { timestamps: true });
 
-AnimalSchema.pre('findOneAndDelete', async function (next) {
-    const animalId = this.getQuery()["_id"];
-
-    const FamAccueil = mongoose.model('FamAccueil');
-
-    // Mettre à jour la famille d'accueil en retirant l'animalID du tableau 'animals'
-    await FamAccueil.findOneAndUpdate(
-        { animals: animalId }, // Trouver la famille d'accueil qui contient l'animalID dans le tableau 'animals'
-        { $pull: { animals: animalId } }, // Retirer l'animalID du tableau 'animals'
-        { omitUndefined: true } // Option pour retourner le document modifié
-    );
-
-    next();
-});
 
 const Animal = model<IAnimal>('Animal', AnimalSchema);
 export default Animal;

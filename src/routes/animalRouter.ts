@@ -1,5 +1,17 @@
 import { Router } from 'express';
-import { changeAnimalStatus, createAnimal, deleteAnimal, getAllAnimals, getAllAnimalsID, getAllAnimalsValidated, getAnimal, getAnimalWithContact, getLatestAnimal, updateAnimal } from '~/controllers/animalController';
+import {
+    changeAnimalStatus,
+    createAnimal,
+    createAnimalAdmin,
+    deleteAnimal,
+    getAllAnimals,
+    getAllAnimalsID,
+    getAllAnimalsValidated,
+    getAnimal,
+    getAnimalWithContact,
+    getLatestAnimal,
+    updateAnimal
+} from '~/controllers/animalController';
 import { verifyToken } from '~/middlewares/verifyToken';
 import multer from 'multer';
 
@@ -29,7 +41,7 @@ const router = Router();
  *         description: Erreur lors de l'upload de l'image.
  */
 router.post("/", verifyToken, upload.fields([{ name: 'images' }]), createAnimal)
-
+router.post("/admin", verifyToken, upload.fields([{ name: 'images' }]), createAnimalAdmin)
 /**
  * @swagger
  * /api/v1/animal:

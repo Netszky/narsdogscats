@@ -23,7 +23,7 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
                 user: user._id
             });
             await famille.save()
-            mailjet.post("send", { 'version': 'v3.1' })
+            await mailjet.post("send", { 'version': 'v3.1' })
                 .request({
                     "Messages": [
                         {
@@ -68,74 +68,48 @@ export const getAllFamilleAccueil = async (req: Request, res: Response) => {
 
 }
 
-export const validateFamille = async (req: Request, res: Response) => {
+export const changeFamilleStatus = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         try {
             const exist = await FamAccueil.exists({ _id: req.params.id })
             if (exist) {
-
                 const famille = await FamAccueil.findByIdAndUpdate(req.params.id, {
                     $set: {
-                        actif: true
+                        actif: req.body.actif
                     }
                 }, { omitUndefined: true, new: true })
                 const user = await User.findByIdAndUpdate(famille?.user, {
                     $set: {
-                        isAdmin: true
+                        isAdmin: req.body.actif
                     }
                 })
-                mailjet
-                    .post("send", { 'version': 'v3.1' })
-                    .request({
-                        "Messages": [
-                            {
-                                "From": {
-                                    "Email": "lesanimauxdu27.web@gmail.com",
-                                    "Name": "Les Animaux du 27"
-                                },
-                                "To": [
-                                    {
-                                        "Email": user?.email,
+                res.status(200).send({})
+                if (famille?.actif) {
+                    await mailjet
+                        .post("send", { 'version': 'v3.1' })
+                        .request({
+                            "Messages": [
+                                {
+                                    "From": {
+                                        "Email": "lesanimauxdu27.web@gmail.com",
+                                        "Name": "Les Animaux du 27"
+                                    },
+                                    "To": [
+                                        {
+                                            "Email": user?.email,
+                                        }
+                                    ],
+                                    "TemplateID": 4733581,
+                                    "TemplateLanguage": true,
+                                    "Subject": "Demande Famille Accueil Validée !",
+                                    "Variables": {
+                                        "nom": user?.firstname
                                     }
-                                ],
-                                "TemplateID": 4733581,
-                                "TemplateLanguage": true,
-                                "Subject": "Demande Famille Accueil Validée !",
-                                "Variables": {
-                                    "nom": user?.firstname
                                 }
-                            }
-                        ]
-                    })
-                res.status(200).send({ message: "Famille activée" })
-            } else {
-                res.status(404).send({
-                    message: "Aucune Famille correspondante"
-                })
-            }
-        } catch (error) {
-            res.status(500).send({
-                message: error || "Erreur lors de la validation de la famille"
-            })
-        }
-    } else {
-        res.status(403).send({ message: "Forbidden" })
-    }
-}
-
-export const deactivateFamille = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isSuperAdmin) {
-        try {
-            const exist = await FamAccueil.exists({ _id: req.params.id })
-            if (exist) {
-
-                const famille = await FamAccueil.findByIdAndUpdate(req.params.id, {
-                    $set: {
-                        actif: false
-                    }
-                }, { new: true, omitUndefined: true })
-                await User.findOneAndUpdate({ famAccueil: famille?._id }, { isAdmin: false }, { omitUndefined: true })
-                res.status(200).send({ message: "Famille desactivée" })
+                            ]
+                        })
+                    res.status(200).send({ message: "Famille activée" })
+                }
             } else {
                 res.status(404).send({
                     message: "Aucune Famille correspondante"
@@ -332,5 +306,23 @@ export const getFamilleByID = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const getFamilleOptions = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        try {
+            const familles = await FamAccueil.find({}, { _id: 1, nom: 1 })
+            res.status(200).send({ familles: familles })
+
+        } catch {
+            res.status(500).send({})
+        }
+
+    } else {
+        res.status(403).send({
+            message: "Forbidden"
+        })
+    }
+}
+
 
 

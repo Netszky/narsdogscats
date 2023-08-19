@@ -18,7 +18,7 @@ export const createContact = async (req: Request, res: Response) => {
             prenom: prenom
         });
         await contact.save()
-        mailjet.post("send", { 'version': 'v3.1' })
+        await mailjet.post("send", { 'version': 'v3.1' })
             .request({
                 "Messages": [
                     {

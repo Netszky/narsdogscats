@@ -9,6 +9,7 @@ export interface IUser {
     isAdmin: boolean,
     isSuperAdmin: boolean,
     resetToken: string,
+
 }
 
 const userSchema = new Schema<IUser>({
@@ -16,8 +17,8 @@ const userSchema = new Schema<IUser>({
     firstname: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    isAdmin: { type: Boolean, requred: true, default: false },
-    isSuperAdmin: { type: Boolean, requred: true, default: false },
+    isAdmin: { type: Boolean, required: true, default: false },
+    isSuperAdmin: { type: Boolean, required: true, default: false },
     resetToken: { type: String, required: false },
 });
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createFamilleAccueil, deactivateFamille, deleteFamille, findFamilleStatus, getAllFamilleAccueil, getFamilleByID, getFamillesCapacity, updateFamille, validateFamille, verifyFamille } from '~/controllers/familleAccueilController';
+import { changeFamilleStatus, createFamilleAccueil, deleteFamille, findFamilleStatus, getAllFamilleAccueil, getFamilleByID, getFamilleOptions, getFamillesCapacity, updateFamille, verifyFamille } from '~/controllers/familleAccueilController';
 import { verifyToken } from '~/middlewares/verifyToken';
 
 const router = Router();
@@ -59,11 +59,11 @@ const router = Router();
 router.post("/", verifyToken, createFamilleAccueil)
 /**
  * @swagger
- * /api/v1/famille/validate/{id}:
+ * /api/v1/famille/status/{id}:
  *   put:
  *     tags: [ "Famille Accueil" ]
- *     summary: Active une famille d'accueil et envoie un mail à cette dernière
- *     description: Cette API permet à un superutilisateur de valider une famille d'accueil
+ *     summary: Change le statut d'une famille
+ *     description: Cette API permet à un superutilisateur de change le statut d'une famille d'accueil
  *     security:
  *       - ApiKeyAuth: []
  *     parameters:
@@ -119,70 +119,7 @@ router.post("/", verifyToken, createFamilleAccueil)
  *                 message:
  *                   type: string
  */
-router.put("/validate/:id", verifyToken, validateFamille)
-/**
- * @swagger
- * /api/v1/famille/unvalidate/{id}:
- *   put:
- *     tags: [ "Famille Accueil" ]
- *     summary: Desactive une famille d'accueil
- *     description: Cette API permet à un superutilisateur de desactiver une famille d'accueil
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         type: string
- *         description: L'ID de la famille a desactiver
- *     security:
- *       - ApiKeyAuth: []
- *     responses:
- *       201:
- *         description: Famille d'Accueil desactivée
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       401:
- *         description: Le token est invalide ou expiré.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       403:
- *         description: L'utilisateur ne dispose pas des droits nécessaires
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       404:
- *         description: Aucune famille correspondante à l'id
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       500:
- *         description: Erreur lors de la validation de la famille d'accueil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- */
-router.put("/unvalidate/:id", verifyToken, deactivateFamille)
+router.put("/status/:id", verifyToken, changeFamilleStatus)
 /**
  * @swagger
  * /api/v1/famille/:
@@ -645,6 +582,59 @@ router.get("/capacity", getFamillesCapacity)
  *                   type: boolean
  */
 router.get("/verify-famille", verifyToken, verifyFamille)
+
+/**
+ * @swagger
+ * /api/v1/famille/verify-famille:
+ *   get:
+ *     tags: [ "Famille Accueil" ]
+ *     summary: Renvoie l'id et le nom de toutes les familles
+ *     description: Cette API permet de récupérer les infos nom et id d'une famille pour la création d'un animal
+ *     security:
+ *       - ApiKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: Récupération de la capacité des familles réussie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isAdmin:
+ *                   type: boolean
+ *                 actif:
+ *                   type: boolean
+ *       401:
+ *         description: Le token est invalide ou expiré.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       403:
+ *         description: Utilisateur non authorizé.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Erreur lors de la récupération de la capacité d'accueil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isAdmin:
+ *                   type: boolean
+ *                 actif:
+ *                   type: boolean
+ */
+router.get("/options", verifyToken, getFamilleOptions)
 
 
 export default router;
