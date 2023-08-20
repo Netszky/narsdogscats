@@ -9,6 +9,7 @@ import {
     getAllAnimalsValidated,
     getAnimal,
     getAnimalWithContact,
+    getAnimalsCount,
     getLatestAnimal,
     updateAnimal
 } from '~/controllers/animalController';
@@ -42,6 +43,7 @@ const router = Router();
  */
 router.post("/", verifyToken, upload.fields([{ name: 'images' }]), createAnimal)
 router.post("/admin", verifyToken, upload.fields([{ name: 'images' }]), createAnimalAdmin)
+router.get("/count", getAnimalsCount);
 /**
  * @swagger
  * /api/v1/animal:
@@ -607,6 +609,7 @@ router.delete("/:id", verifyToken, deleteAnimal);
 router.put("/status/:id", verifyToken, changeAnimalStatus)
 
 router.put("/:id", verifyToken, updateAnimal);
+
 
 
 export default router;

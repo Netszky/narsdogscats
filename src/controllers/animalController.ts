@@ -243,7 +243,6 @@ export const updateAnimal = async (req: Request, res: Response) => {
 }
 
 export const getAllAnimalsValidated = async (req: Request, res: Response) => {
-    console.log(req.query)
 
     try {
         if (Object.keys(req.query).length > 0) {
@@ -252,8 +251,7 @@ export const getAllAnimalsValidated = async (req: Request, res: Response) => {
             res.status(200).send({
                 status: 200,
                 animals: animals,
-                nbChien: animals.filter(i => i.espece === 2).length,
-                nbChat: animals.filter(i => i.espece === 1).length
+
 
             })
         } else {
@@ -261,8 +259,7 @@ export const getAllAnimalsValidated = async (req: Request, res: Response) => {
             res.status(200).send({
                 status: 200,
                 animals: animals,
-                nbChien: animals.filter(i => i.espece === 2).length,
-                nbChat: animals.filter(i => i.espece === 1).length
+
             })
         }
 
@@ -314,8 +311,6 @@ export const getLatestAnimal = async (req: Request, res: Response) => {
         })
     }
 };
-
-
 
 export const getAnimal = async (req: Request, res: Response) => {
     try {
@@ -396,9 +391,9 @@ export const changeAnimalStatus = async (req: Request, res: Response) => {
         const exist = await Animal.exists({ _id: req.params.id })
         try {
             if (exist) {
-                await Animal.findByIdAndUpdate(req.params.id, {
+                const animal = await Animal.findByIdAndUpdate(req.params.id, {
                     status: req.body.status
-                }, { omitUndefined: true })
+                }, { omitUndefined: true, new: true })
                 res.status(200).send({ message: "Animal Modifié" })
             } else {
                 res.status(404).send({
@@ -414,6 +409,21 @@ export const changeAnimalStatus = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const getAnimalsCount = async (req: Request, res: Response) => {
+    try {
+        const animals = await Animal.find({ status: 1 }, { espece: 1 })
+
+        res.status(200).send({
+            total: animals
+        })
+    } catch (error) {
+        res.status(500).send({
+            message: error || "Erreur dans la récupération des animaux"
+        })
+    }
+};
+
 
 
 

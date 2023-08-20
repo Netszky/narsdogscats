@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CustomRequest } from '~/middlewares/verifyToken';
+import Animal from '~/models/animalModel';
 import FamAccueil from '~/models/famAccueil';
 import User from '~/models/userModel';
 import { mailjet } from '~/services/express';
@@ -83,7 +84,6 @@ export const changeFamilleStatus = async (req: Request, res: Response) => {
                         isAdmin: req.body.actif
                     }
                 })
-                res.status(200).send({})
                 if (famille?.actif) {
                     await mailjet
                         .post("send", { 'version': 'v3.1' })
@@ -109,6 +109,9 @@ export const changeFamilleStatus = async (req: Request, res: Response) => {
                             ]
                         })
                     res.status(200).send({ message: "Famille activée" })
+                } else {
+                    res.status(200).send({ message: "Famille desactivée" })
+                    await Animal.updateMany({ famille: req.params.id }, { status: 0 })
                 }
             } else {
                 res.status(404).send({
@@ -155,7 +158,7 @@ export const deleteFamille = async (req: Request, res: Response) => {
                         })
                 })
                 res.status(200).send({
-                    message: "Famille supprimée"
+                    message: "Famille supprimée",
                 })
 
             } else {
