@@ -8,7 +8,6 @@ export interface IContact {
     closed: boolean,
     nom: string,
     prenom: string,
-    famille: Types.ObjectId
 
 }
 
@@ -19,7 +18,6 @@ const contactAnimalSchema = new Schema<IContact>({
     nom: { type: String, required: true },
     prenom: { type: String, required: true },
     closed: { type: Boolean, required: false, default: false },
-    famille: { type: Schema.Types.ObjectId, ref: 'FamAccueil', required: true }
 
 }, { timestamps: true });
 
