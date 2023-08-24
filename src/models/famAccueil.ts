@@ -29,7 +29,7 @@ const FamAccueilSchema = new Schema<IFamAccueil>({
     adresse: { type: String, required: true },
     actif: { type: Boolean, required: false, default: false },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true }
-});
+}, { timestamps: true });
 const FamAccueil = model<IFamAccueil>('FamAccueil', FamAccueilSchema);
 
 

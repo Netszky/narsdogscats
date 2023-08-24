@@ -2,7 +2,6 @@ import { Router } from 'express';
 import {
     changeAnimalStatus,
     createAnimal,
-    createAnimalAdmin,
     deleteAnimal,
     getAllAnimals,
     getAllAnimalsID,
@@ -42,7 +41,7 @@ const router = Router();
  *         description: Erreur lors de l'upload de l'image.
  */
 router.post("/", verifyToken, upload.fields([{ name: 'images' }]), createAnimal)
-router.post("/admin", verifyToken, upload.fields([{ name: 'images' }]), createAnimalAdmin)
+
 router.get("/count", getAnimalsCount);
 /**
  * @swagger
@@ -607,7 +606,6 @@ router.delete("/:id", verifyToken, deleteAnimal);
  *                   type: string
  */
 router.put("/status/:id", verifyToken, changeAnimalStatus)
-
 router.put("/:id", verifyToken, updateAnimal);
 
 

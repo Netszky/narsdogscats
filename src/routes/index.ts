@@ -11,6 +11,7 @@ import animalContactRouter from '../routes/contactAnimalRouter';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocs from '../swagger';
 import infoRouter from './infoAssociationRouter';
+import adminRouter from './admin/adminRouter';
 const router = Router()
 
 router.use("/auth", authRouter)
@@ -24,4 +25,5 @@ router.use("/abandon", abandonRouter)
 router.use("/animal-contact", animalContactRouter)
 router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 router.use("/info", infoRouter)
+router.use("/admin", adminRouter)
 export default router;
