@@ -51,29 +51,34 @@ export const deleteFamille = async (req: Request, res: Response) => {
         try {
             const exist = await FamAccueil.exists({ _id: req.params.id })
             if (exist) {
-                await FamAccueil.findOneAndDelete({ _id: req.params.id }).populate('user').then((data) => {
-                    mailjet.post("send", { 'version': 'v3.1' })
-                        .request({
-                            "Messages": [
-                                {
-                                    "From": {
-                                        "Email": "lesanimauxdu27.web@gmail.com",
-                                        "Name": "Les Animaux du 27"
-                                    },
-                                    "To": [
-                                        {
-                                            "Email": data?.email
-                                        }
-                                    ],
-                                    "TemplateID": 4861743,
-                                    "TemplateLanguage": true,
-                                    "Subject": "Votre demande a été refusée",
-                                    "Variables": {
-                                        "name": data?.user?.firstname
+                const famille = await FamAccueil.findOneAndDelete({ _id: req.params.id }).populate('user')
+                mailjet.post("send", { 'version': 'v3.1' })
+                    .request({
+                        "Messages": [
+                            {
+                                "From": {
+                                    "Email": "lesanimauxdu27.web@gmail.com",
+                                    "Name": "Les Animaux du 27"
+                                },
+                                "To": [
+                                    {
+                                        "Email": famille?.email
                                     }
+                                ],
+                                "TemplateID": 4861743,
+                                "TemplateLanguage": true,
+                                "Subject": "Votre demande a été refusée",
+                                "Variables": {
+                                    "name": famille?.user?.firstname
                                 }
-                            ]
-                        })
+                            }
+                        ]
+                    })
+
+                await User.findByIdAndUpdate(famille?.user._id, {
+                    $set: {
+                        isAdmin: false
+                    }
                 })
                 await Animal.deleteMany({ famille: req.params.id })
                 res.status(200).send({

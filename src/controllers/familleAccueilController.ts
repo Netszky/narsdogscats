@@ -93,6 +93,7 @@ export const findFamilleStatus = async (req: Request, res: Response) => {
     try {
         const info = req as CustomRequest
         const inactiveFamille = await FamAccueil.findOne({ user: info.user.id })
+
         if (inactiveFamille !== null) {
             if (inactiveFamille?.actif) {
                 res.status(200).send({
