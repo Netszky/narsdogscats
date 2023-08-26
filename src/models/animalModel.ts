@@ -53,7 +53,7 @@ const AnimalSchema = new Schema<IAnimal>({
     },
     taille: { type: String, required: false },
     // 1 petit 2 moyen 3 grand
-    gabarit: { type: Number, required: false, enum: [1, 2, 3] },
+    gabarit: { type: Number, required: true, enum: [1, 2, 3] },
     birthdate: { type: Date, required: false },
     contact: [{ type: Schema.Types.ObjectId, ref: "ContactAnimal" }],
     image: [{
@@ -65,7 +65,7 @@ const AnimalSchema = new Schema<IAnimal>({
     // 2 Reserve
     // 3 Adopte
     status: { type: Number, required: false, default: 0, enum: [0, 1, 2, 3] },
-    famille: { type: Schema.Types.ObjectId, ref: "FamAccueil" }
+    famille: { type: Schema.Types.ObjectId, ref: "FamAccueil", required: true }
 }, { timestamps: true });
 
 

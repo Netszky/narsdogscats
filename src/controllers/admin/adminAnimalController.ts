@@ -4,6 +4,7 @@ import Animal from "~/models/animalModel"
 import { deleteImageFromCloudinary, getPublicIdFromUrl } from "~/utils/cloudinary"
 import cloudinary from 'cloudinary';
 import streamifier from 'streamifier';
+import FamAccueil from "~/models/famAccueil";
 
 interface UploadResult {
     url: string;
@@ -22,7 +23,6 @@ export const getAnimalByFamille = async (req: Request, res: Response) => {
 
 export const createAnimalAdmin = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
-        const idFamily = (req as CustomRequest).user.fam
         if (!('images' in req.files!)) {
             return res.status(400).send("Missing 'images' field");
         }
@@ -114,4 +114,27 @@ export const getAllAnimals = async (req: Request, res: Response) => {
         })
     }
 
+}
+export const changeAnimalStatus = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        const exist = await Animal.exists({ _id: req.params.id })
+        try {
+            if (exist) {
+                await Animal.findByIdAndUpdate(req.params.id, {
+                    status: req.body.status
+                }, { omitUndefined: true })
+                res.status(200).send({ message: "Animal Modifié" })
+            } else {
+                res.status(404).send({
+                    message: "Aucun animal correspondant à l'id"
+                })
+            }
+        } catch (error) {
+            res.status(500).send({ message: error || "Erreur lors de l'activation de l'animal" })
+        }
+    } else {
+        res.status(403).send({
+            message: "Forbidden"
+        })
+    }
 }

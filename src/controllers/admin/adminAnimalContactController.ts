@@ -4,7 +4,6 @@ import Animal from "~/models/animalModel"
 import ContactAnimal from "~/models/contactAnimal"
 
 export const deleteAnimalContact = async (req: Request, res: Response) => {
-
     if ((req as CustomRequest).user.isSuperAdmin) {
         try {
             const exist = await ContactAnimal.exists({ _id: req.params.id })

@@ -65,28 +65,36 @@ export const createContactAnimal = async (req: Request, res: Response) => {
 }
 
 export const deleteAnimalContact = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isAdmin) {
-        try {
-            const exist = await ContactAnimal.exists({ _id: req.params.id })
-            if (exist) {
-                await ContactAnimal.findByIdAndDelete(req.params.id)
-                await Animal.findByIdAndUpdate(req.body.animalId, {
-                    $pull: {
-                        contact: req.params.id
-                    }
-                })
-                res.status(200).send({
-                    message: "Entree Supprimée ",
-                })
+    const user = (req as CustomRequest).user
+    if (user.isAdmin) {
+        const animal = await Animal.findById(req.body.animalId)
+        if (animal?.famille === user.fam) {
+            try {
+                const exist = await ContactAnimal.exists({ _id: req.params.id })
+                if (exist) {
+                    await ContactAnimal.findByIdAndDelete(req.params.id)
+                    await Animal.findByIdAndUpdate(req.body.animalId, {
+                        $pull: {
+                            contact: req.params.id
+                        }
+                    })
+                    res.status(200).send({
+                        message: "Entree Supprimée ",
+                    })
 
-            } else {
-                res.status(404).send({
-                    message: "Aucun evenement trouvé"
+                } else {
+                    res.status(404).send({
+                        message: "Aucun evenement trouvé"
+                    })
+                }
+            } catch (error) {
+                res.status(500).send({
+                    message: error || "Erreur dans la suppression de la demande de contact"
                 })
             }
-        } catch (error) {
-            res.status(500).send({
-                message: error || "Erreur dans la suppression de la demande de contact"
+        } else {
+            res.status(403).send({
+                message: "Unauthorized"
             })
         }
     } else {

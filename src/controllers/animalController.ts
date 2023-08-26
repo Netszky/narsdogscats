@@ -13,8 +13,6 @@ interface UploadResult {
     url: string;
 }
 
-
-
 export const createAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
         const idFamily = (req as CustomRequest).user.fam
@@ -41,7 +39,7 @@ export const createAnimal = async (req: Request, res: Response) => {
             const uploadResults = await Promise.all(uploadPromises);
             const imagesUrls = uploadResults.map(result => result.url);
 
-            const { caractere, nom, race, sexe, typeAdoption, espece, taille, birthdate, gabarit, ententeChat, ententeChien, ententeEnfant, ententeEtranger, affectueux, calme, protecteur, aboiement } = req.body
+            const { caractere, nom, race, sexe, typeAdoption, espece, taille, birthdate, gabarit, ententeChat, ententeChien, ententeEnfant, ententeEtranger, affectueux, calme, joueur, bruit } = req.body
 
             const animal = new Animal({
                 nom: nom,
@@ -60,59 +58,49 @@ export const createAnimal = async (req: Request, res: Response) => {
                 ententeEtranger: ententeEtranger,
                 affectueux: affectueux,
                 calme: calme,
-                protecteur: protecteur,
-                aboiement: aboiement
+                joueur: joueur,
+                bruit: bruit,
+                famille: idFamily
             });
             if (idFamily) {
                 await animal.save()
                     .then((data) => {
-                        FamAccueil.findByIdAndUpdate(idFamily, {
-                            $push: {
-                                animals: animal._id
-                            }
-                        }, { omitUndefined: true, new: true })
-                            .then((update) => {
-                                mailjet.post("send", { 'version': 'v3.1' })
-                                    .request({
-                                        "Messages": [
+                        mailjet.post("send", { 'version': 'v3.1' })
+                            .request({
+                                "Messages": [
+                                    {
+                                        "From": {
+                                            "Email": "lesanimauxdu27.web@gmail.com",
+                                            "Name": "Les Animaux du 27"
+                                        },
+                                        "To": [
                                             {
-                                                "From": {
-                                                    "Email": "lesanimauxdu27.web@gmail.com",
-                                                    "Name": "Les Animaux du 27"
-                                                },
-                                                "To": [
-                                                    {
-                                                        "Email": "lesanimauxdu27.web@gmail.com"
-                                                    }
-                                                ],
-                                                "TemplateID": 4745777,
-                                                "TemplateLanguage": true,
-                                                "Subject": "Validation Animal en attente !",
-                                                "Variables": {
-                                                    "famille": update?.nom,
-                                                    "nom": data.nom,
-                                                    "Espece": data.espece,
-                                                    "Race": data.race,
-                                                    "TypeA": data.typeAdoption === 0 ? "Normal" : data.typeAdoption === 1 ? "Retraite" : "Sos",
-                                                    "url": `${process.env.FRONT_URL}admin/animal/`
-                                                }
+                                                "Email": "lesanimauxdu27.web@gmail.com"
                                             }
-                                        ]
-                                    })
-                                    .then((mail) => {
-                                        res.status(201).send({})
-                                    })
-                                    .catch((err) => {
-                                        console.log(err);
-                                        res.status(500).send({})
-                                    })
-                            }).catch((err) => {
-                                res.status(500).send({
-                                    status: 500
-                                })
+                                        ],
+                                        "TemplateID": 4745777,
+                                        "TemplateLanguage": true,
+                                        "Subject": "Validation Animal en attente !",
+                                        "Variables": {
+                                            "nom": data.nom,
+                                            "Espece": data.espece,
+                                            "Race": data.race,
+                                            "TypeA": data.typeAdoption === 0 ? "Normal" : data.typeAdoption === 1 ? "Retraite" : "Sos",
+                                            "url": `${process.env.FRONT_URL}admin/animal/`
+                                        }
+                                    }
+                                ]
+                            })
+                            .then((mail) => {
+                                res.status(201).send({})
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                                res.status(500).send({})
                             })
                     })
                     .catch((err) => {
+                        console.log(err);
 
                         const deletePromises = imagesUrls.map((url) => {
                             return new Promise<void>((resolve, reject) => {
@@ -244,20 +232,6 @@ export const getAnimal = async (req: Request, res: Response) => {
         })
     }
 };
-export const getAnimalWithContact = async (req: Request, res: Response) => {
-    try {
-        const animal = await Animal.findById(req.params.id).populate('contact')
-        res.status(200).send({
-            animal: animal
-        })
-    } catch (error) {
-        res.status(500).send({
-            message: error || "Erreur dans la récupération de l'animal"
-        })
-    }
-};
-
-
 
 export const deleteAnimal = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isAdmin) {
@@ -308,47 +282,22 @@ export const deleteAnimal = async (req: Request, res: Response) => {
 
 
 export const changeAnimalStatus = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isSuperAdmin) {
-        const exist = await Animal.exists({ _id: req.params.id })
-        try {
-            if (exist) {
-                const animal = await Animal.findByIdAndUpdate(req.params.id, {
+    if ((req as CustomRequest).user.isAdmin) {
+        const animal = await Animal.findById(req.params.id)
+        if (animal?.famille.toString() === (req as CustomRequest).user.fam) {
+            try {
+                await Animal.findByIdAndUpdate(req.params.id, {
                     status: req.body.status
-                }, { omitUndefined: true, new: true })
-                const famille = await FamAccueil.findById(animal?.famille)
-                if (famille && animal) {
-                    if (animal?.status === 1) {
-                        if (animal.espece === 1) {
-                            await FamAccueil.findByIdAndUpdate(famille?.id, {
-                                capaciteActuelleChat: famille?.capaciteActuelleChat + 1
-                            })
-
-                        } else if (animal.espece === 2) {
-                            await FamAccueil.findByIdAndUpdate(famille?.id, {
-                                capaciteActuelleChien: famille?.capaciteActuelleChat + 1
-                            })
-                        }
-                    } else if (animal?.status === 0 || 3) {
-                        if (animal.espece === 1) {
-                            await FamAccueil.findByIdAndUpdate(famille?.id, {
-                                capaciteActuelleChat: famille?.capaciteActuelleChat - 1
-                            })
-
-                        } else if (animal.espece === 2) {
-                            await FamAccueil.findByIdAndUpdate(famille?.id, {
-                                capaciteActuelleChien: famille?.capaciteActuelleChat - 1
-                            })
-                        }
-                    }
-                }
+                }, { omitUndefined: true })
                 res.status(200).send({ message: "Animal Modifié" })
-            } else {
-                res.status(404).send({
-                    message: "Aucun animal correspondant à l'id"
-                })
+
+            } catch (error) {
+                res.status(500).send({ message: error || "Erreur lors de l'activation de l'animal" })
             }
-        } catch (error) {
-            res.status(500).send({ message: error || "Erreur lors de l'activation de l'animal" })
+        } else {
+            res.status(403).send({
+                message: "Forbidden"
+            })
         }
     } else {
         res.status(403).send({
@@ -371,6 +320,17 @@ export const getAnimalsCount = async (req: Request, res: Response) => {
     }
 };
 
+export const getAnimalByFamille = async (req: Request, res: Response) => {
+    const user = (req as CustomRequest).user
+    if (user.isAdmin) {
+        try {
+            const animals = await Animal.find({ famille: user.fam }).populate('contact')
+            res.status(200).send({ animals: animals })
+        } catch {
+            res.status(500).send({ message: "Erreur lors de la récupération" })
+        }
+    }
+}
 
 
 

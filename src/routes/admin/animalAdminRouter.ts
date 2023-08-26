@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createAnimalAdmin, getAllAnimals, getAnimalByFamille } from '~/controllers/admin/adminAnimalController';
+import { changeAnimalStatus, createAnimalAdmin, getAllAnimals, getAnimalByFamille } from '~/controllers/admin/adminAnimalController';
 import { verifyToken } from '~/middlewares/verifyToken';
 import multer from 'multer';
 
@@ -10,5 +10,6 @@ const router = Router()
 router.get("/:id", verifyToken, getAnimalByFamille)
 router.get('/', verifyToken, getAllAnimals)
 router.post("/", verifyToken, upload.fields([{ name: 'images' }]), createAnimalAdmin)
+router.put("/status/:id", verifyToken, changeAnimalStatus)
 
 export default router;

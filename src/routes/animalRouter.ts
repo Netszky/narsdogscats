@@ -7,7 +7,7 @@ import {
     getAllAnimalsID,
     getAllAnimalsValidated,
     getAnimal,
-    getAnimalWithContact,
+    getAnimalByFamille,
     getAnimalsCount,
     getLatestAnimal,
     updateAnimal
@@ -18,6 +18,8 @@ import multer from 'multer';
 const upload = multer()
 
 const router = Router();
+router.get("/famille", verifyToken, getAnimalByFamille)
+
 /**
  * @swagger
  * /api/v1/animal:
@@ -390,96 +392,7 @@ router.get("/ids", getAllAnimalsID)
  *                   type: string
  */
 router.get("/:id", getAnimal);
-/**
- * @swagger
- * /api/v1/animal/{id}/contact:
- *   get:
- *     tags: [ "Animal" ]
- *     summary: Récupère un animal en fonction de son id
- *     description: Cette API permet de récupérer un animal en fonction de son id
- *     parameters:
- *      - in: path
- *        name: id
- *        required: true
- *        type: string
- *        description: "ID de l'animal"
- *     responses:
- *       200:
- *         description: Récupération de l'animal réussie
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 animal:
- *                   type: object
- *                   properties:
- *                     _id:
- *                       type: string
- *                     nom:
- *                       type: string
- *                     age:
- *                       type: integer
- *                     espece:
- *                       type: string
- *                     race:
- *                       type: string
- *                     sexe:
- *                       type: string
- *                     caractere:
- *                       type: string
- *                     entente:
- *                       type: array
- *                       items:
- *                         type: string
- *                     typeAdoption:
- *                       type: string
- *                     taille:
- *                       type: string
- *                     birthdate:
- *                       type: string
- *                     image:
- *                       type: array
- *                       items:
- *                         type: string
- *                     validate:
- *                       type: boolean
- *                     createdAt:
- *                       type: string
- *                     contact:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           _id:
- *                             type: string
- *                           type:
- *                             type: string
- *                           telephone:
- *                             type: string
- *                           email:
- *                             type: string
- *                           content:
- *                             type: string
- *                           closed:
- *                             type: boolean
- *                           nom:
- *                             type: string
- *                           prenom:
- *                             type: string
- *                           famille:
- *                             type: string
- *       500:
- *         description: Erreur dans la récupération de l'animal
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- */
-router.get("/:id/contact", getAnimalWithContact);
+
 /**
  * @swagger
  * /api/v1/animal/{id}:
@@ -604,7 +517,7 @@ router.delete("/:id", verifyToken, deleteAnimal);
  *               properties:
  *                 message:
  *                   type: string
- */
+*/
 router.put("/status/:id", verifyToken, changeAnimalStatus)
 router.put("/:id", verifyToken, updateAnimal);
 

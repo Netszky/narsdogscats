@@ -179,7 +179,7 @@ router.post("/", verifyToken, createFamilleAccueil)
  *                 message:
  *                   type: string
  */
-router.get('/informations', verifyToken, getFamilleByID)
+router.get('/me', verifyToken, getFamilleByID)
 /**
  * @swagger
  * /api/v1/famille:
@@ -373,59 +373,5 @@ router.get("/capacity", getFamillesCapacity)
  *                   type: boolean
  */
 router.get("/verify-famille", verifyToken, verifyFamille)
-
-/**
- * @swagger
- * /api/v1/famille/verify-famille:
- *   get:
- *     tags: [ "Famille Accueil" ]
- *     summary: Renvoie l'id et le nom de toutes les familles
- *     description: Cette API permet de récupérer les infos nom et id d'une famille pour la création d'un animal
- *     security:
- *       - ApiKeyAuth: []
- *     responses:
- *       200:
- *         description: Récupération de la capacité des familles réussie
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 isAdmin:
- *                   type: boolean
- *                 actif:
- *                   type: boolean
- *       401:
- *         description: Le token est invalide ou expiré.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       403:
- *         description: Utilisateur non authorizé.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       500:
- *         description: Erreur lors de la récupération de la capacité d'accueil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 isAdmin:
- *                   type: boolean
- *                 actif:
- *                   type: boolean
- */
-
-
 
 export default router;
