@@ -7,7 +7,6 @@ export interface IAbandonAnimal {
     telephone: string,
     email: string,
     content: string,
-    closed: boolean,
     nom: string,
     age: string,
     prenom: string
@@ -30,7 +29,6 @@ const abandonAnimalSchema = new Schema<IAbandonAnimal>({
     content: { type: String, required: false },
     nom: { type: String, required: true },
     prenom: { type: String, required: true },
-    closed: { type: Boolean, required: false, default: false }
 
 }, { timestamps: true });
 

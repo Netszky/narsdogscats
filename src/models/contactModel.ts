@@ -6,7 +6,6 @@ export interface IContact {
     telephone: string,
     email: string,
     content: string,
-    closed: boolean,
     nom: string,
     prenom: string
 
@@ -19,7 +18,6 @@ const contactSchema = new Schema<IContact>({
     content: { type: String, required: false },
     nom: { type: String, required: true },
     prenom: { type: String, required: true },
-    closed: { type: Boolean, required: false, default: false }
 
 }, { timestamps: true });
 
