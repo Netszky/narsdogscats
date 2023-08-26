@@ -101,3 +101,17 @@ export const createAnimalAdmin = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const getAllAnimals = async (req: Request, res: Response) => {
+    try {
+        const animals = await Animal.find({}).populate('contact')
+        res.status(200).send({
+            animals: animals
+        })
+    } catch (error) {
+        res.status(500).send({
+            message: error || "Erreur dans la récupération des animaux"
+        })
+    }
+
+}
