@@ -91,18 +91,6 @@ export const updateResetPassword = async (req: Request, res: Response) => {
 
 };
 
-export const verifyAdmin = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isSuperAdmin) {
-        res.status(200).send({
-            isSuperAdmin: true
-        })
-    } else {
-        res.status(403).send({
-            isSuperAdmin: false
-        })
-    }
-};
-
 
 export const refreshToken = async (req: Request, res: Response) => {
     const info = (req as CustomRequest).user

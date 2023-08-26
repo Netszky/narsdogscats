@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { refreshToken, resetPassword, updateResetPassword, verifyAdmin, verifyResetToken } from '~/controllers/userController';
+import { refreshToken, resetPassword, updateResetPassword, verifyResetToken } from '~/controllers/userController';
 import { verifyToken } from '~/middlewares/verifyToken';
 
 const router = Router()
@@ -91,45 +91,6 @@ router.post("/reset-password", resetPassword)
  *                   type: integer
  */
 router.post("/update-password", verifyToken, updateResetPassword);
-/**
- * @swagger
- * /api/v1/user/admin:
- *   get:
- *     tags: [ "User" ]
- *     summary: Verifie les droit super utilisateur d'un utilisateur via son token (token)
- *     description: Verifie les droit super utilisateur d'un utilisateur via son token (token)
- *     security:
- *       - ApiKeyAuth: []
- *     responses:
- *       200:
- *         description: L'utilisateur est superAdministrateur
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 isSuperAdmin:
- *                   type: boolean
- *       401:
- *         description: L'utilisateur n'est pas authentifié ou le token est incorrect
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       403:
- *         description: L'utilisateur n'est pas superAdministrateur
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 isSuperAdmin:
- *                   type: boolean
- */
-router.get("/admin", verifyToken, verifyAdmin);
 /**
  * @swagger
  * /api/v1/user/reset-token:
