@@ -5,6 +5,7 @@ import { deleteImageFromCloudinary, getPublicIdFromUrl } from "~/utils/cloudinar
 import cloudinary from 'cloudinary';
 import streamifier from 'streamifier';
 import FamAccueil from "~/models/famAccueil";
+import ContactAnimal from "~/models/contactAnimal";
 
 interface UploadResult {
     url: string;
@@ -138,3 +139,48 @@ export const changeAnimalStatus = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const deleteAnimal = async (req: Request, res: Response) => {
+    if ((req as CustomRequest).user.isSuperAdmin) {
+        const exist = await Animal.exists({ _id: req.params.id })
+        try {
+            if (exist) {
+                const animal = await Animal.findOneAndDelete({ _id: req.params.id })
+                if (animal?.image) {
+                    const deletePromises = animal?.image?.map((url) => {
+                        return new Promise<void>((resolve, reject) => {
+                            const publicId = getPublicIdFromUrl(url);
+                            if (publicId) {
+                                deleteImageFromCloudinary(publicId)
+                                    .then(() => resolve())
+                                    .catch((error) => reject(error));
+                            } else {
+                                reject(new Error('Invalid image URL'));
+                            }
+                        });
+                    });
+                    Promise.all(deletePromises)
+                }
+                if (animal?.contact) {
+                    for (let c of animal.contact) {
+                        await ContactAnimal.deleteOne({ _id: c._id });
+                    }
+                }
+                res.status(200).send({ message: "Animal Supprimé" })
+            } else {
+                res.status(404).send({
+                    message: "Aucun animal correspondant à l'id"
+                })
+            }
+        } catch (error) {
+            res.status(500).send({
+                message: error || "Erreur dans la suppression de l'animal"
+            })
+        }
+    } else {
+        res.status(403).send({
+            message: "Forbidden"
+        })
+    }
+}
+

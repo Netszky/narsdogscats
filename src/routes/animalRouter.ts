@@ -2,7 +2,6 @@ import { Router } from 'express';
 import {
     changeAnimalStatus,
     createAnimal,
-    deleteAnimal,
     getAllAnimals,
     getAllAnimalsID,
     getAllAnimalsValidated,
@@ -393,69 +392,7 @@ router.get("/ids", getAllAnimalsID)
  */
 router.get("/:id", getAnimal);
 
-/**
- * @swagger
- * /api/v1/animal/{id}:
- *   delete:
- *     tags: [ "Animal" ]
- *     summary: Supprime un animal en fonction de son ID
- *     description: Cette API permet de supprimer un animal en fonction de son ID
- *     security:
- *       - ApiKeyAuth: []
- *     parameters:
- *      - in: path
- *        name: id
- *        required: true
- *        type: string
- *        description: "ID de l'animal"
- *     responses:
- *       200:
- *         description: Suppression de l'animal réussie
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       401:
- *         description: Non autorisé, l'utilisateur doit être administrateur.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       403: 
- *         description: L'utilisateur ne dispose pas des droits nécessaires
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       404:
- *         description:  Aucun animal correspondant à l'id
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       500:
- *         description: Erreur dans la suppression de l'animal
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- */
-router.delete("/:id", verifyToken, deleteAnimal);
+
 /**
  * @swagger
  * /api/v1/animal/status/{id}:

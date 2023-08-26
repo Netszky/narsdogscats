@@ -68,7 +68,7 @@ export const deleteAnimalContact = async (req: Request, res: Response) => {
     const user = (req as CustomRequest).user
     if (user.isAdmin) {
         const animal = await Animal.findById(req.body.animalId)
-        if (animal?.famille === user.fam) {
+        if (animal?.famille.toString() === user.fam) {
             try {
                 const exist = await ContactAnimal.exists({ _id: req.params.id })
                 if (exist) {

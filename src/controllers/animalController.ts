@@ -233,51 +233,6 @@ export const getAnimal = async (req: Request, res: Response) => {
     }
 };
 
-export const deleteAnimal = async (req: Request, res: Response) => {
-    if ((req as CustomRequest).user.isAdmin) {
-        const exist = await Animal.exists({ _id: req.params.id })
-        try {
-            if (exist) {
-                await Animal.findOneAndDelete({ _id: req.params.id }).then((data) => {
-                    if (data?.image) {
-                        const deletePromises = data?.image?.map((url) => {
-                            return new Promise<void>((resolve, reject) => {
-                                const publicId = getPublicIdFromUrl(url);
-                                if (publicId) {
-                                    deleteImageFromCloudinary(publicId)
-                                        .then(() => resolve())
-                                        .catch((error) => reject(error));
-                                } else {
-                                    reject(new Error('Invalid image URL'));
-                                }
-                            });
-                        });
-                        Promise.all(deletePromises)
-                            .then(() => res.status(200).send({ message: "Animal supprimé" }))
-                            .catch((error) => res.status(500).send({ message: error || "Erreur dans la suppression de l'animal" }));
-                    } else {
-                        res.status(200).send({
-                            message: "Animal supprimé"
-                        })
-                    }
-                })
-            } else {
-                res.status(404).send({
-                    message: "Aucun animal correspondant à l'id"
-                })
-            }
-        } catch (error) {
-
-            res.status(500).send({
-                message: error || "Erreur dans la suppression de l'animal"
-            })
-        }
-    } else {
-        res.status(403).send({
-            message: "Forbidden"
-        })
-    }
-}
 
 
 
