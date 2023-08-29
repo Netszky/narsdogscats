@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createFamilleAccueil, findFamilleStatus, getFamilleByID, getFamillesCapacity, updateFamille, verifyFamille } from '~/controllers/familleAccueilController';
+import { createFamilleAccueil, findFamilleStatus, getFamilleByID, updateFamille, verifyFamille } from '~/controllers/familleAccueilController';
 import { verifyToken } from '~/middlewares/verifyToken';
 
 const router = Router();
@@ -300,36 +300,6 @@ router.put('/', verifyToken, updateFamille)
  *                   type: string
  */
 router.get("/status", verifyToken, findFamilleStatus)
-/**
- * @swagger
- * /api/v1/famille/capacity:
- *   get:
- *     tags: [ "Famille Accueil" ]
- *     summary: Récupère la capacité total d'accueil de l'ensemble des familles
- *     description: Cette API permet d'effectuer des demandes d'abandons si la capacité d'accueil des familles est positive
- *     responses:
- *       200:
- *         description: Récupération de la capacité des familles réussie
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 canReceiveChien:
- *                   type: boolean
- *                 canReceiveChat:
- *                   type: boolean
- *       500:
- *         description: Erreur lors de la récupération de la capacité d'accueil
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- */
-router.get("/capacity", getFamillesCapacity)
 /**
  * @swagger
  * /api/v1/famille/verify-famille:

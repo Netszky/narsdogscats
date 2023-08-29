@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createAbandon } from '~/controllers/abandonAnimalController';
+import { createAbandon, getCapacity } from '~/controllers/abandonAnimalController';
 import { verifyToken } from '~/middlewares/verifyToken';
 
 
@@ -64,6 +64,7 @@ const router = Router();
  *                   type: string
  */
 router.post("/", createAbandon)
+router.get("/capacity", getCapacity)
 
 
 export default router;

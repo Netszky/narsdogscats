@@ -118,37 +118,7 @@ export const findFamilleStatus = async (req: Request, res: Response) => {
 
 }
 
-export const getFamillesCapacity = async (req: Request, res: Response) => {
-    try {
-        let capChat: number = 0
-        let capActuelleChat: number = 0
-        let capChien: number = 0
-        let capActuelleChien: number = 0
-        const familles = await FamAccueil.find({ actif: true })
 
-        let canReceiveChat: boolean = false
-        let canReceiveChien: boolean = false
-        for (const element of familles) {
-            capChat += element.capaciteChat
-            capChien += element.capaciteChien
-            capActuelleChien += element.capaciteActuelleChien
-            capActuelleChat += element.capaciteActuelleChat
-        }
-        if (capActuelleChat < capChat) {
-            canReceiveChat = true
-        }
-        if (capActuelleChien < capChien) {
-            canReceiveChien = true
-        }
-        res.status(200).send({ canReceiveChien: canReceiveChien, canReceiveChat: canReceiveChat })
-
-    } catch (error) {
-        res.status(500).send({
-            message: error || "Erreur lors de la récupération de la capacité d'accueil"
-        })
-    }
-
-}
 export const verifyFamille = async (req: Request, res: Response) => {
     try {
 
