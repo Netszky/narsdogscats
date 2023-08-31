@@ -6,7 +6,9 @@ import ContactAnimal from "~/models/contactAnimal"
 export const deleteAnimalContact = async (req: Request, res: Response) => {
     if ((req as CustomRequest).user.isSuperAdmin) {
         try {
+
             const exist = await ContactAnimal.exists({ _id: req.params.id })
+
             if (exist) {
                 await ContactAnimal.findByIdAndDelete(req.params.id)
                 await Animal.findByIdAndUpdate(req.body.animalId, {
@@ -25,7 +27,7 @@ export const deleteAnimalContact = async (req: Request, res: Response) => {
             }
         } catch (error) {
             res.status(500).send({
-                message: error || "Erreur dans la suppression de la demande de contact"
+                message: "Erreur dans la suppression de la demande de contact"
             })
         }
     } else {

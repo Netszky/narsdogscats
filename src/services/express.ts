@@ -7,12 +7,14 @@ import apiRouter from '../routes/index';
 import cloudinary from 'cloudinary';
 import Mailjet from 'node-mailjet';
 import { getConfig } from '../config/config';
+import { dbConnect } from './mongo';
 
 
 dotenv.config();
+dbConnect()
 
 const app: Express = express();
-const port: string = getConfig('PORT')
+
 const corsOptions = {
   origin: ['https://les-animaux-du-27.fr', 'https://www.les-animaux-du-27.fr', 'http://localhost:3000', 'http://localhost:3300'],
   // origin: "*",
@@ -30,8 +32,4 @@ cloudinary.v2.config({
   api_secret: process.env.CLOUDINARY_SECRET
 })
 export const mailjet = new Mailjet({ apiKey: process.env.MAILJET_API, apiSecret: process.env.MAILJET_SECRET })
-
-
-export const start: Server = app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-});
+export default app;

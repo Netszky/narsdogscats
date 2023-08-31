@@ -29,7 +29,7 @@ export const login = async (req: Request, res: Response) => {
                     expiresIn: 80000
                 }
             )
-            res.send({
+            res.status(200).send({
                 token: userToken,
                 auth: true,
                 firstname: data!.firstname,
@@ -44,6 +44,8 @@ export const login = async (req: Request, res: Response) => {
             })
         }
     }).catch((err) => {
+        console.log(err);
+
         res.status(401).send({
             auth: false,
             token: null
@@ -53,6 +55,7 @@ export const login = async (req: Request, res: Response) => {
 
 
 export const register = async (req: Request, res: Response) => {
+
     const SECRET_JWT: Secret = getConfig('SECRET_JWT')
     const hashPassword = bcrypt.hashSync(req.body.password, 10);
     const user = new User({
