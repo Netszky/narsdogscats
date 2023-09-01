@@ -102,7 +102,6 @@ export const findFamilleStatus = async (req: Request, res: Response) => {
                     status: "CA"
                 })
             } else {
-                console.log(inactiveFamille);
                 res.status(200).send({
                     status: "CU"
                 })

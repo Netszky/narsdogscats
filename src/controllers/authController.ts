@@ -44,7 +44,6 @@ export const login = async (req: Request, res: Response) => {
             })
         }
     }).catch((err) => {
-        console.log(err);
 
         res.status(401).send({
             auth: false,
