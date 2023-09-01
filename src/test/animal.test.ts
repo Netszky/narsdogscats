@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import request from 'supertest';
 import Animal from '~/models/animalModel';
 import app from '~/services/express';
@@ -23,6 +24,8 @@ describe('getAnimalByFamille', () => {
         expect(adminUserResponse.status).toBe(200);
 
     });
+
+
 
 
     it('should reject access for users with insufficient roles', async () => {
@@ -249,6 +252,10 @@ describe('GET /api/v1/animal', () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
+
 
     it('should retrieve all animals', async () => {
 

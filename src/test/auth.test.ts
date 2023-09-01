@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '~/services/express';
 import User from '~/models/userModel';
+import mongoose from 'mongoose';
 
 describe('Authentication Test', () => {
 
@@ -25,6 +26,11 @@ describe('Authentication Test', () => {
     afterEach(async () => {
         await User.findOneAndDelete({ email: "testuser@gmail.com" });
     });
+
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
+
 
     it('should login successfully with correct credentials', async () => {
         const res = await request(app)

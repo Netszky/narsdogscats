@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import request from 'supertest';
 import app from '~/services/express';
 
@@ -23,6 +24,10 @@ describe('CreateContact', () => {
         superAdminUserToken = superAdminUserResponse.body.token;
         expect(superAdminUserResponse.status).toBe(200);
 
+    });
+
+    afterAll(async () => {
+        await mongoose.connection.close();
     });
 
 
