@@ -8,6 +8,7 @@ import streamifier from 'streamifier';
 import { deleteImageFromCloudinary, getPublicIdFromUrl } from '~/utils/cloudinary';
 import FamAccueil from '~/models/famAccueil';
 import { mailjet } from '~/services/express';
+import Informations from '~/models/infoAssociation';
 
 interface UploadResult {
     url: string;
@@ -64,18 +65,19 @@ export const createAnimal = async (req: Request, res: Response) => {
             });
             if (idFamily) {
                 await animal.save()
-                    .then((data) => {
+                    .then(async (data) => {
+                        const infos = await Informations.findOne()
                         mailjet.post("send", { 'version': 'v3.1' })
                             .request({
                                 "Messages": [
                                     {
                                         "From": {
-                                            "Email": "lesanimauxdu27.web@gmail.com",
+                                            "Email": infos?.email,
                                             "Name": "Les Animaux du 27"
                                         },
                                         "To": [
                                             {
-                                                "Email": "lesanimauxdu27.web@gmail.com"
+                                                "Email": infos?.email
                                             }
                                         ],
                                         "TemplateID": 4745777,
@@ -281,9 +283,11 @@ export const getAnimalByFamille = async (req: Request, res: Response) => {
         try {
             const animals = await Animal.find({ famille: user.fam }).populate('contact')
             res.status(200).send({ animals: animals })
-        } catch {
+        } catch (error) {
             res.status(500).send({ message: "Erreur lors de la récupération" })
         }
+    } else {
+        res.status(403).send({ message: "Unauthorized" })
     }
 }
 

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { CustomRequest } from '~/middlewares/verifyToken';
 import Animal from '~/models/animalModel';
 import FamAccueil from '~/models/famAccueil';
+import Informations from '~/models/infoAssociation';
 import User from '~/models/userModel';
 import { mailjet } from '~/services/express';
 
@@ -24,12 +25,13 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
                 user: user._id
             });
             await famille.save()
+            const infos = await Informations.findOne()
             await mailjet.post("send", { 'version': 'v3.1' })
                 .request({
                     "Messages": [
                         {
                             "From": {
-                                "Email": "lesanimauxdu27.web@gmail.com",
+                                "Email": infos?.email,
                                 "Name": "Les Animaux du 27"
                             },
                             "To": [

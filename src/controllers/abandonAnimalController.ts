@@ -3,6 +3,7 @@ import { CustomRequest } from '~/middlewares/verifyToken';
 import AbandonAnimal from '~/models/abandonAnimal';
 import Animal from '~/models/animalModel';
 import FamAccueil from '~/models/famAccueil';
+import Informations from '~/models/infoAssociation';
 import { mailjet } from '~/services/express';
 
 
@@ -21,17 +22,18 @@ export const createAbandon = async (req: Request, res: Response) => {
             age: age
         });
         await contact.save()
+        const infos = await Informations.findOne()
         await mailjet.post("send", { 'version': 'v3.1' })
             .request({
                 "Messages": [
                     {
                         "From": {
-                            "Email": "lesanimauxdu27.web@gmail.com",
+                            "Email": infos?.email,
                             "Name": "Les Animaux du 27"
                         },
                         "To": [
                             {
-                                "Email": "lesanimauxdu27.web@gmail.com"
+                                "Email": infos?.email
                             }
                         ],
                         "TemplateID": 4744170,

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CustomRequest } from '~/middlewares/verifyToken';
 import Contact from '~/models/contactModel';
+import Informations from '~/models/infoAssociation';
 import { mailjet } from '~/services/express';
 
 
@@ -18,17 +19,18 @@ export const createContact = async (req: Request, res: Response) => {
             prenom: prenom
         });
         await contact.save()
+        const infos = await Informations.findOne()
         await mailjet.post("send", { 'version': 'v3.1' })
             .request({
                 "Messages": [
                     {
                         "From": {
-                            "Email": "lesanimauxdu27.web@gmail.com",
+                            "Email": infos?.email,
                             "Name": "Les Animaux du 27"
                         },
                         "To": [
                             {
-                                "Email": "lesanimauxdu27.web@gmail.com",
+                                "Email": infos?.email,
                             }
                         ],
                         "TemplateID": 4805639,
@@ -46,7 +48,8 @@ export const createContact = async (req: Request, res: Response) => {
                 ]
             })
         res.status(201).send({
-            message: "Demande de contact créée"
+            message: "Demande de contact créée",
+            contact: contact._id
         })
     } catch (error) {
         res.status(500).send({
