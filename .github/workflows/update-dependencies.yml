@@ -2,7 +2,7 @@ name: Update Dependencies and Test Compatibility
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Exécutez ce pipeline une fois par jour à minuit
+    - cron: '0 0 1 * *'
 
 jobs:
   test:
