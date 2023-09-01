@@ -46,10 +46,10 @@ export const createAbandon = async (req: Request, res: Response) => {
 
             })
         res.status(201).send({
-            message: "created"
+            message: "created",
+            abandon: contact._id
         })
     } catch (error) {
-
         res.status(500).send({
             message: error
         })
