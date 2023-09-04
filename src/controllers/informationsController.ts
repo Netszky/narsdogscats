@@ -4,7 +4,7 @@ import Informations from '~/models/infoAssociation';
 
 export const getInformations = async (req: Request, res: Response) => {
     try {
-        const informations = await Informations.findById(1)
+        const informations = await Informations.findOne()
         if (informations) {
             res.status(200).send({ informations: informations })
         } else {
@@ -22,7 +22,7 @@ export const updateInformations = async (req: Request, res: Response) => {
             }, { omitUndefined: true })
             res.status(200).send({ message: "Updated" })
         } else {
-            res.status(401).send({ message: "Unauthorized" })
+            res.status(403).send({ message: "Unauthorized" })
         }
     } catch (error) {
         res.status(500).send({ message: error })

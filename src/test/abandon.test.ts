@@ -128,6 +128,11 @@ describe('get capacity', () => {
         await mongoose.connection.close();
     });
 
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+
 
     it('should get capacity', async () => {
         const res = await request(app)
