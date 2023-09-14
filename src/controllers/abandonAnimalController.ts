@@ -83,7 +83,7 @@ export const getCapacity = async (req: Request, res: Response) => {
             if (countObj._id === 2) chatCount = countObj.count;
         }
         return FamAccueil.findByIdAndUpdate(
-            famille._id, // ajustement ici
+            famille._id,
             {
                 capaciteActuelleChien: chienCount,
                 capaciteActuelleChat: chatCount

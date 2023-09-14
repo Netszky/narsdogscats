@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { createPartenaire, deletePartenaire, getAllPartenaire, updatePartenaire } from '~/controllers/partenaireController';
 import { verifyToken } from '~/middlewares/verifyToken';
+import multer from 'multer';
+
+const upload = multer()
 
 const router = Router();
 /**
@@ -64,7 +67,7 @@ const router = Router();
  *                 message:
  *                   type: string
  */
-router.post("/", verifyToken, createPartenaire)
+router.post("/", verifyToken, upload.single('image'), createPartenaire)
 /**
  * @swagger
  * /api/v1/partenaire:
@@ -178,7 +181,7 @@ router.get("/", getAllPartenaire)
  *                 message:
  *                   type: string
  */
-router.put("/:id", verifyToken, updatePartenaire)
+router.put("/:id", verifyToken, upload.single('image'), updatePartenaire)
 /**
  * @swagger
  * /api/v1/partenaire/{id}:

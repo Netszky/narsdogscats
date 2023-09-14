@@ -6,6 +6,7 @@ import { CustomRequest } from '~/middlewares/verifyToken';
 import { mailjet } from '~/services/express';
 import FamAccueil from '~/models/famAccueil';
 import { getConfig } from '~/config/config';
+import Informations from '~/models/infoAssociation';
 
 export const resetPassword = async (req: Request, res: Response) => {
     const SECRET_JWT: Secret = getConfig('SECRET_JWT')
@@ -24,13 +25,14 @@ export const resetPassword = async (req: Request, res: Response) => {
             const updated = await User.findByIdAndUpdate(user?._id, {
                 resetToken: newToken
             }, { omitUndefined: true, new: true })
+            const infos = await Informations.findOne()
 
-            mailjet.post("send", { 'version': 'v3.1' })
+            await mailjet.post("send", { 'version': 'v3.1' })
                 .request({
                     "Messages": [
                         {
                             "From": {
-                                "Email": "lesanimauxdu27.web@gmail.com",
+                                "Email": infos?.email,
                                 "Name": "Les Animaux du 27"
                             },
                             "To": [
@@ -47,7 +49,12 @@ export const resetPassword = async (req: Request, res: Response) => {
                             }
                         }
                     ]
-                }).catch((err) => {
+                }).then((data) => {
+                    console.log(data);
+                    res.status(201).send({})
+
+                })
+                .catch((err) => {
                     res.status(500).send({ message: "Mail non envoyé" })
                 })
             res.status(200).send({ message: "mail de reset envoyé" })
