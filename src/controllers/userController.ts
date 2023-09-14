@@ -11,21 +11,21 @@ import Informations from '~/models/infoAssociation';
 export const resetPassword = async (req: Request, res: Response) => {
     const SECRET_JWT: Secret = getConfig('SECRET_JWT')
     try {
-        const user = await User.findOne({ email: req.body.email })
+        const user = await User.findOne({ email: req.body.email });
 
         if (user) {
             const newToken = jwt.sign({
-                id: user?._id
+                id: user._id
             },
                 SECRET_JWT,
                 {
                     expiresIn: 80000
                 }
-            )
-            const updated = await User.findByIdAndUpdate(user?._id, {
+            );
+            const updated = await User.findByIdAndUpdate(user._id, {
                 resetToken: newToken
-            }, { omitUndefined: true, new: true })
-            const infos = await Informations.findOne()
+            }, { omitUndefined: true, new: true });
+            const infos = await Informations.findOne();
 
             await mailjet.post("send", { 'version': 'v3.1' })
                 .request({
@@ -49,25 +49,19 @@ export const resetPassword = async (req: Request, res: Response) => {
                             }
                         }
                     ]
-                }).then((data) => {
-                    console.log(data);
-                    res.status(201).send({})
+                })
+            console.log(`${process.env.FRONT_URL}reset-password?token=${updated?.resetToken}`);
 
-                })
-                .catch((err) => {
-                    res.status(500).send({ message: "Mail non envoyé" })
-                })
-            res.status(200).send({ message: "mail de reset envoyé" })
+            res.status(200).send({ "message": "Email Envoyé" })
         } else {
-            res.status(404).send({ message: "utilisateur non trouvé" })
+            return res.status(404).send({ message: "utilisateur non trouvé" });
         }
-
-
     } catch (error) {
-        res.status(500).send({ status: 500 })
+        console.error("Error in resetPassword:", error);
+        return res.status(500).send({ status: 500 });
     }
-
 };
+
 export const updateResetPassword = async (req: Request, res: Response) => {
     const id = (req as CustomRequest).user.id
     if (req.body.password) {
