@@ -57,7 +57,7 @@ export const createAbandon = async (req: Request, res: Response) => {
 }
 
 export const getCapacity = async (req: Request, res: Response) => {
-    const familles = await FamAccueil.find({}, { _id: 1 });
+    const familles = await FamAccueil.find({ actif: true }, { _id: 1 });
 
     const promises = familles.map(async (famille) => {
         const animalCounts = await Animal.aggregate([
@@ -94,6 +94,11 @@ export const getCapacity = async (req: Request, res: Response) => {
     await Promise.all(promises); // Attendre que toutes les mises à jour soient terminées
     const capacities = await FamAccueil.aggregate([
         {
+            $match: {
+                actif: true
+            }
+        },
+        {
             $group: {
                 _id: null, // Grouper tout en un seul résultat
                 totalCapaciteChien: { $sum: "$capaciteChien" },
@@ -111,7 +116,6 @@ export const getCapacity = async (req: Request, res: Response) => {
         res.status(200).send({ abandonChien: true, abandonChat: true });
         return;
     }
-
     const isOverCapacityChien = capacityData.totalCapaciteActuelleChien < capacityData.totalCapaciteChien;
     const isOverCapacityChat = capacityData.totalCapaciteActuelleChat < capacityData.totalCapaciteChat;
     res.json({ abandonChien: isOverCapacityChien, abandonChat: isOverCapacityChat });
