@@ -79,8 +79,8 @@ export const getCapacity = async (req: Request, res: Response) => {
         let chatCount = 0;
 
         for (const countObj of animalCounts) {
-            if (countObj._id === 1) chienCount = countObj.count;
-            if (countObj._id === 2) chatCount = countObj.count;
+            if (countObj._id === 2) chienCount = countObj.count;
+            if (countObj._id === 1) chatCount = countObj.count;
         }
         return FamAccueil.findByIdAndUpdate(
             famille._id,
