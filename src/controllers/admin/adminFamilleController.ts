@@ -2,6 +2,7 @@ import { Request, Response } from "express"
 import { CustomRequest } from "~/middlewares/verifyToken"
 import Animal from "~/models/animalModel"
 import FamAccueil from "~/models/famAccueil"
+import Informations from "~/models/infoAssociation"
 import User from "~/models/userModel"
 import { mailjet } from "~/services/express"
 
@@ -52,12 +53,13 @@ export const deleteFamille = async (req: Request, res: Response) => {
             const exist = await FamAccueil.exists({ _id: req.params.id })
             if (exist) {
                 const famille = await FamAccueil.findOneAndDelete({ _id: req.params.id }).populate('user')
+                const infos = await Informations.findOne()
                 mailjet.post("send", { 'version': 'v3.1' })
                     .request({
                         "Messages": [
                             {
                                 "From": {
-                                    "Email": "lesanimauxdu27.web@gmail.com",
+                                    "Email": infos?.email,
                                     "Name": "Les Animaux du 27"
                                 },
                                 "To": [
@@ -129,6 +131,7 @@ export const changeFamilleStatus = async (req: Request, res: Response) => {
                         isAdmin: req.body.actif
                     }
                 })
+                const infos = await Informations.findOne()
                 if (famille?.actif) {
                     await mailjet
                         .post("send", { 'version': 'v3.1' })
@@ -136,7 +139,7 @@ export const changeFamilleStatus = async (req: Request, res: Response) => {
                             "Messages": [
                                 {
                                     "From": {
-                                        "Email": "lesanimauxdu27.web@gmail.com",
+                                        "Email": infos?.email,
                                         "Name": "Les Animaux du 27"
                                     },
                                     "To": [
@@ -148,7 +151,8 @@ export const changeFamilleStatus = async (req: Request, res: Response) => {
                                     "TemplateLanguage": true,
                                     "Subject": "Demande Famille Accueil Validée !",
                                     "Variables": {
-                                        "nom": user?.firstname
+                                        "nom": user?.firstname,
+                                        "url": `${process.env.FRONT_URL}mon-espace`
                                     }
                                 }
                             ]

@@ -42,7 +42,8 @@ export const createContact = async (req: Request, res: Response) => {
                             "email": email,
                             "content": content,
                             "nom": nom,
-                            "prenom": prenom
+                            "prenom": prenom,
+                            "url": `${process.env.FRONT_URL}admin/contact`
                         }
                     }
                 ]
@@ -52,6 +53,7 @@ export const createContact = async (req: Request, res: Response) => {
             contact: contact._id
         })
     } catch (error) {
+
         res.status(500).send({
             message: error || "Erreur dans la création de la demande de contact"
         })

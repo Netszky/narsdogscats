@@ -11,6 +11,7 @@ export const login = async (req: Request, res: Response) => {
     const SECRET_JWT: Secret = getConfig('SECRET_JWT')
 
     const email = req.body.email.toLowerCase()
+
     await User.findOne({
         email: email
     }).then(async (data) => {
@@ -44,6 +45,7 @@ export const login = async (req: Request, res: Response) => {
             })
         }
     }).catch((err) => {
+        console.log(err);
 
         res.status(401).send({
             auth: false,

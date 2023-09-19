@@ -3,6 +3,7 @@ import { CustomRequest } from '~/middlewares/verifyToken';
 import Animal from '~/models/animalModel';
 import ContactAnimal from '~/models/contactAnimal';
 import FamAccueil from '~/models/famAccueil';
+import Informations from '~/models/infoAssociation';
 import { mailjet } from '~/services/express';
 
 
@@ -27,18 +28,18 @@ export const createContactAnimal = async (req: Request, res: Response) => {
         }, { new: true, omitUndefined: true });
 
         const famAccueil = await FamAccueil.findById(animalUpdated?.famille)
-
+        const infos = await Informations.findOne()
         await mailjet.post("send", { 'version': 'v3.1' })
             .request({
                 "Messages": [
                     {
                         "From": {
-                            "Email": "lesanimauxdu27.web@gmail.com",
+                            "Email": infos?.email,
                             "Name": "Les Animaux du 27"
                         },
                         "To": [
                             {
-                                "Email": famAccueil?.email ?? "lesanimauxdu27.web@gmail.com"
+                                "Email": famAccueil?.email ?? infos?.email
                             }
                         ],
                         "TemplateID": 4861835,
@@ -51,7 +52,7 @@ export const createContactAnimal = async (req: Request, res: Response) => {
                             "email": email,
                             "telephone": telephone,
                             "infos": content,
-                            "url": `${process.env.FRONT_URL}famille-accueil/animaux/${animalUpdated?.id}`
+                            "url": `${process.env.FRONT_URL}mon-espace`
                         }
                     }
                 ]

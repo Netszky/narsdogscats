@@ -36,10 +36,17 @@ export const createAbandon = async (req: Request, res: Response) => {
                                 "Email": infos?.email
                             }
                         ],
-                        "TemplateID": 4744170,
+                        "TemplateID": 5106459,
                         "TemplateLanguage": true,
                         "Subject": "Abandon Animal",
                         "Variables": {
+                            "nom": contact.nom,
+                            "prenom": contact.prenom,
+                            "telephone": contact.telephone,
+                            "email": contact.email,
+                            "espece": contact.espece,
+                            "content": contact.content,
+                            "url": `${process.env.FRONT_URL}admin/abandon`
                         }
                     }
                 ]
