@@ -7,6 +7,7 @@ import { mailjet } from '~/services/express';
 import FamAccueil from '~/models/famAccueil';
 import { getConfig } from '~/config/config';
 import Informations from '~/models/infoAssociation';
+import Animal from '~/models/animalModel';
 
 export const resetPassword = async (req: Request, res: Response) => {
     const SECRET_JWT: Secret = getConfig('SECRET_JWT')
@@ -102,6 +103,61 @@ export const refreshToken = async (req: Request, res: Response) => {
         auth: true,
         isFamille: famille?.actif ?? false
     })
+};
+
+export const deleteAccount = async (req: Request, res: Response) => {
+    try {
+        const email = req.body.email.toLowerCase()
+        const user = await User.findOne({
+            email: email
+        })
+        if (user) {
+
+            if (bcrypt.compareSync(req.body.password, user?.password)) {
+                const infos = await Informations.findOne()
+                await User.findByIdAndDelete(user?.id)
+                const famille = await FamAccueil.findByIdAndDelete(user.id)
+                if (famille) {
+                    await Animal.deleteMany({ famille: famille?.id })
+                }
+                mailjet
+                    .post("send", { 'version': 'v3.1' })
+                    .request({
+                        "Messages": [
+                            {
+                                "From": {
+                                    "Email": infos?.email,
+                                    "Name": "Les Animaux du 27"
+                                },
+                                "To": [
+                                    {
+                                        "Email": user?.email,
+                                    }
+                                ],
+                                "TemplateID": 5109017,
+                                "TemplateLanguage": true,
+                                "Variables": {
+                                    "nom": user?.firstname,
+                                    "email": user?.email
+                                }
+                            }
+                        ]
+                    })
+                res.status(200).send({ message: "Compte supprimé" })
+            } else {
+                res.status(401).send({
+                    message: "Unauthorized"
+
+                })
+            }
+        } else {
+            res.status(404).send({ message: "Utilisateur introuvable" })
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: error || "Erreur" })
+    }
+
 };
 
 export const verifyResetToken = async (req: Request, res: Response) => {

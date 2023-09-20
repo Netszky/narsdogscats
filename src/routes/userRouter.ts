@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { refreshToken, resetPassword, updateResetPassword, verifyResetToken } from '~/controllers/userController';
+import { deleteAccount, refreshToken, resetPassword, updateResetPassword, verifyResetToken } from '~/controllers/userController';
 import { verifyToken } from '~/middlewares/verifyToken';
 
 const router = Router()
@@ -176,6 +176,7 @@ router.get("/reset-token", verifyToken, verifyResetToken)
  *                   type: string
  */
 router.get('/refresh', verifyToken, refreshToken)
+router.delete('/delete', deleteAccount)
 
 
 export default router;
