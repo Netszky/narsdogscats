@@ -37,7 +37,7 @@ export const createFamilleAccueil = async (req: Request, res: Response) => {
                                 },
                                 "To": [
                                     {
-                                        "Email": "chigotjulien@gmail.com"
+                                        "Email": infos?.email
                                     }
                                 ],
                                 "TemplateID": 4805652,
