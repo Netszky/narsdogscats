@@ -40,6 +40,9 @@ export const createContactAnimal = async (req: Request, res: Response) => {
                         "To": [
                             {
                                 "Email": famAccueil?.email ?? infos?.email
+                            },
+                            {
+                                "Email": infos?.email
                             }
                         ],
                         "TemplateID": 4861835,
